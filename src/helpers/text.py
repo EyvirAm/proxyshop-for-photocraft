@@ -1,6 +1,7 @@
 """
 * Helpers: Text Items
 """
+from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from logging import getLogger
@@ -825,13 +826,26 @@ def scale_text_right_overlap(
             ref_TI.contents = ""
         return
 
+    # If there is no initial overlap at all, no scaling is needed
+    if not check_bounds_overlap(layer_bounds, ref_bounds, reference_side):
+        if ref_TI:
+            ref_TI.contents = ""
+        return
+
     uneven_round = False
     # Adjust text size down and up in decreasing steps
     for idx, step_size in enumerate(step_sizes):
         uneven_round = bool(idx % 2)
 
         # Check overlap
-        while check_bounds_overlap(layer_bounds, ref_bounds, reference_side):
+        while (
+            (
+                not check_bounds_overlap(layer_bounds, ref_bounds, reference_side)
+                if uneven_round
+                else check_bounds_overlap(layer_bounds, ref_bounds, reference_side)
+            )
+            and 1.0 < font_size < old_size + 5.0
+        ):
             if uneven_round:
                 font_size += step_size
             else:
@@ -839,7 +853,10 @@ def scale_text_right_overlap(
 
             set_text_size(layer, font_size)
 
-            layer_bounds = layer.bounds
+            new_bounds = layer.bounds
+            if new_bounds == layer_bounds:
+                break
+            layer_bounds = new_bounds
 
     # If the last round was uneven we have to go one step down
     if uneven_round:
@@ -886,9 +903,12 @@ def scale_text_left_overlap(
     # Make our first check if scaling is necessary
     if continue_scaling := bool(ref_right_bound > layer.bounds[0]):
         # Step down the font till it clears the reference
-        while continue_scaling:
+        while continue_scaling and font_size > 1.0:
+            prev_bounds = layer.bounds
             font_size -= step
             set_text_size(layer, font_size)
+            if layer.bounds == prev_bounds:
+                break
             continue_scaling = bool(ref_right_bound > layer.bounds[0])
 
         # Go up a half step
@@ -939,10 +959,14 @@ def scale_text_to_width(
     half_step = step / 2
 
     # Step down font and lead sizes by the step size, and update those sizes in the layer
-    while continue_scaling:
+    while continue_scaling and font_size > 1.0:
+        prev_w = get_layer_width(layer)
         font_size -= step
         set_text_size_and_leading(layer, font_size, font_size)
-        continue_scaling = bool(width < get_layer_width(layer))
+        new_w = get_layer_width(layer)
+        if new_w == prev_w:
+            break
+        continue_scaling = bool(width < new_w)
 
     # Increase by a half step
     font_size += half_step
@@ -953,6 +977,43 @@ def scale_text_to_width(
         font_size -= half_step
         set_text_size_and_leading(layer, font_size, font_size)
     return font_size
+
+
+def has_orphan_line(layer: ArtLayer) -> bool:
+    """Check if any multi-line paragraph in `layer` ends with an isolated orphan word/symbol."""
+    type_lines = getattr(layer, "_type_lines", None)
+    if not isinstance(type_lines, list) or len(type_lines) < 2:
+        return False
+    text = layer.textItem.contents.replace("\r", "\n")
+    if not text:
+        return False
+
+    paragraphs: list[list[dict[str, object]]] = []
+    current_para: list[dict[str, object]] = []
+    for ln in type_lines:
+        start = int(ln.get("start", 0))  # type: ignore[arg-type]
+        if start == 0 or (0 < start <= len(text) and text[start - 1] == "\n"):
+            if current_para:
+                paragraphs.append(current_para)
+            current_para = [ln]
+        else:
+            current_para.append(ln)
+    if current_para:
+        paragraphs.append(current_para)
+
+    for para in paragraphs:
+        if len(para) < 2:
+            continue
+        last_ln = para[-1]
+        s = int(last_ln.get("start", 0))  # type: ignore[arg-type]
+        e = int(last_ln.get("end", 0))  # type: ignore[arg-type]
+        last_text = text[s:e].strip()
+        if not last_text or last_text.startswith(("—", "-")):
+            continue
+        words = last_text.split()
+        if len(last_text) <= 6 or (len(words) == 1 and len(last_text) <= 8):
+            return True
+    return False
 
 
 def scale_text_to_height(
@@ -977,28 +1038,47 @@ def scale_text_to_height(
     # Cancel if we're already within expected bounds
     height = height - APP.instance.scale_by_dpi(spacing)
     continue_scaling = bool(height < get_layer_height(layer))
-    if not continue_scaling:
-        return
 
     # Establish starting size and half step
     if font_size is None:
         font_size = get_font_size(layer)
     half_step = step / 2
 
-    # Step down font and lead sizes by the step size, and update those sizes in the layer
-    while continue_scaling:
-        font_size -= step
-        set_text_size_and_leading(layer, font_size, font_size)
-        continue_scaling = bool(height < get_layer_height(layer))
+    if continue_scaling:
+        # Step down font and lead sizes by the step size, and update those sizes in the layer
+        while continue_scaling and font_size > 1.0:
+            prev_h = get_layer_height(layer)
+            font_size -= step
+            set_text_size_and_leading(layer, font_size, font_size)
+            new_h = get_layer_height(layer)
+            if new_h == prev_h:
+                break
+            continue_scaling = bool(height < new_h)
 
-    # Increase by a half step
-    font_size += half_step
-    set_text_size_and_leading(layer, font_size, font_size)
-
-    # Revert if half step still exceeds reference
-    if height < get_layer_height(layer):
-        font_size -= half_step
+        # Increase by a half step
+        font_size += half_step
         set_text_size_and_leading(layer, font_size, font_size)
+
+        # Revert if half step still exceeds reference
+        if height < get_layer_height(layer):
+            font_size -= half_step
+            set_text_size_and_leading(layer, font_size, font_size)
+
+    # Eliminate isolated orphan words/symbols at the end of multi-line paragraphs
+    if has_orphan_line(layer):
+        saved_size = font_size
+        test_size = font_size
+        for _ in range(8):
+            test_size = round(test_size - half_step, 2)
+            if test_size < 5.5:
+                break
+            set_text_size_and_leading(layer, test_size, test_size)
+            if not has_orphan_line(layer) and get_layer_height(layer) <= height:
+                font_size = test_size
+                break
+        else:
+            set_text_size_and_leading(layer, saved_size, saved_size)
+
     return font_size
 
 
@@ -1018,9 +1098,12 @@ def scale_text_to_width_textbox(
     ref = get_textbox_width(layer) + 1
 
     # Continue to reduce the size until within the bounding box
-    while get_width_no_effects(layer) > ref:
+    while get_width_no_effects(layer) > ref and font_size > 1.0:
+        prev_w = get_width_no_effects(layer)
         font_size -= step
         set_text_size_and_leading(layer, font_size, font_size)
+        if get_width_no_effects(layer) == prev_w:
+            break
 
 
 def scale_text_layers_to_height(
@@ -1055,10 +1138,14 @@ def scale_text_layers_to_height(
 
         # Compare height of all 3 elements vs total reference height
         while (
-            total_layer_height < ref_height
-            if uneven_round
-            else total_layer_height > ref_height
+            (
+                total_layer_height < ref_height
+                if uneven_round
+                else total_layer_height > ref_height
+            )
+            and 1.0 < font_size < 100.0
         ):
+            prev_total = total_layer_height
             total_layer_height = 0
 
             if uneven_round:
@@ -1069,6 +1156,8 @@ def scale_text_layers_to_height(
             for layer in text_layers:
                 set_text_size_and_leading(layer, font_size, font_size)
                 total_layer_height += get_layer_height(layer)
+            if total_layer_height == prev_total:
+                break
 
     # If the last round was uneven we have to go one step down,
     # because we are over the reference height
