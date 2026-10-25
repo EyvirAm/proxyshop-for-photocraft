@@ -1,6 +1,7 @@
 """
 * Text Layer Classes
 """
+from __future__ import annotations
 
 from _ctypes import COMError
 from collections.abc import Sequence
@@ -667,9 +668,14 @@ class FormattedTextField(TextField):
                 for i, color in enumerate(colors):
                     main_range.putInteger(idFrom, index + i)
                     main_range.putInteger(idTo, index + i + 1)
-                    apply_color(main_style, color)
-                    main_style.putString(fontPostScriptName, self.font_mana)
-                    main_range.putObject(textStyle, textStyle, main_style)
+                    mana_style = ActionDescriptor()
+                    apply_color(mana_style, color)
+                    mana_style.putBoolean(autoLeading, False)
+                    mana_style.putBoolean(APP.instance.sID("fauxItalic"), False)
+                    mana_style.putUnitDouble(size, ptUnit, self.font_size)
+                    mana_style.putUnitDouble(APP.instance.sID("leading"), ptUnit, self.font_size)
+                    mana_style.putString(fontPostScriptName, self.font_mana)
+                    main_range.putObject(textStyle, textStyle, mana_style)
                     main_list.putObject(styleRange, main_range)
 
         # Modal choice formatting
@@ -885,8 +891,15 @@ class FormattedTextArea(FormattedTextField):
         if self.reference_dims:
             # Resize the text until it fits the reference vertically
             if self.scale_height:
+                target_height = self.reference_dims["height"]
+                if self.pt_reference:
+                    pt_clear_height = (
+                        self.pt_reference.bounds[1] - self.reference_dims["top"]
+                    )
+                    if pt_clear_height > 0:
+                        target_height = min(target_height, pt_clear_height)
                 font_size = scale_text_to_height(
-                    layer=self.layer, height=self.reference_dims["height"]
+                    layer=self.layer, height=target_height
                 )
 
             # Resize the text until it fits the reference horizontally
