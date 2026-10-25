@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from logging import getLogger
 from threading import Thread
@@ -31,8 +32,8 @@ def photoshop_checks(app: PhotoshopHandler) -> None:
         )
         return
 
-    # Photoshop test passed
-    _logger.info("Connected to Photoshop.")
+    # PhotoCraft test passed
+    _logger.info("Connected to PhotoCraft.")
 
     # Check for missing or outdated fonts
     missing, outdated = check_app_fonts(app, [PATH.FONTS])
@@ -86,7 +87,7 @@ def check_app_update(env: AppEnvironment) -> None:
                             env.APP_UPDATES_REPO
                         }/releases">Download</a>'
                     )
-        except RequestException, ValidationError:
+        except (RequestException, ValidationError):
             _logger.exception("Failed to check app updates")
 
 
@@ -168,10 +169,12 @@ def run_startup_checks(
             )
             PATH.SRC_DATA_PREVIOUS_UPDATE_CHECK.unlink(missing_ok=True)
 
-    # Limit update check interval
-    if not previous_check_datetime or previous_check_datetime < datetime.now(
-        UTC
-    ) - timedelta(hours=env.UPDATE_CHECK_INTERVAL):
+    # Limit update check interval (disabled when UPDATE_CHECK_INTERVAL <= 0)
+    if env.UPDATE_CHECK_INTERVAL > 0 and (
+        not previous_check_datetime
+        or previous_check_datetime
+        < datetime.now(UTC) - timedelta(hours=env.UPDATE_CHECK_INTERVAL)
+    ):
         dump_model(
             PATH.SRC_DATA_PREVIOUS_UPDATE_CHECK, timestamp_model(datetime.now(UTC))
         )

@@ -1,6 +1,7 @@
 """
 * Manage Global State (non-GUI)
 """
+from __future__ import annotations
 
 import os
 import sys
@@ -183,7 +184,7 @@ class AppEnvironment(BaseSettings):
     SYMBOL_UPDATES_REPO: str = ""
     FORCE_RELOAD: bool = False
     VERSION: str = _get_proj_version(PATH.PROJECT_FILE)
-    UPDATE_CHECK_INTERVAL: float = 2.0
+    UPDATE_CHECK_INTERVAL: float = 0.0
 
     model_config = SettingsConfigDict(env_prefix="PROXYSHOP_")
 
@@ -299,7 +300,7 @@ class AppConstants:
             # Ensure file exists
             if not PATH.SRC_DATA_WATERMARKS.is_file():
                 return parse_model(PATH.SRC_DATA_WATERMARKS, WatermarkFormats).root
-        except OSError, ValidationError:
+        except (OSError, ValidationError):
             pass
         except Exception:
             _logger.exception("Failed to get watermark mapping")
@@ -425,7 +426,7 @@ class AppConstants:
             return HexproofSets.model_validate_json(
                 PATH.SRC_DATA_HEXPROOF_SET.read_bytes()
             ).root
-        except OSError, ValidationError:
+        except (OSError, ValidationError):
             pass
         except Exception:
             _logger.exception("Failed to load data from Hexproof set file")
@@ -440,7 +441,7 @@ class AppConstants:
             return HexproofMetas.model_validate_json(
                 PATH.SRC_DATA_HEXPROOF_META.read_bytes()
             ).root
-        except OSError, ValidationError:
+        except (OSError, ValidationError):
             pass
         except Exception:
             _logger.exception("Failed to load data from Hexproof meta file")
