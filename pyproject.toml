@@ -3,7 +3,7 @@ name = "proxyshop"
 version = "1.13.2"
 description = "Photoshop automation tool for generating high quality Magic the Gathering card renders."
 authors = [{ name = "Investigamer", email = "freethoughtleft@gmail.com" }]
-license = "MPL-2.0"
+license = { text = "MPL-2.0" }
 readme = "README.md"
 keywords = [
     "proxyshop",
@@ -16,9 +16,9 @@ keywords = [
     "magic the gathering",
     "playtest",
 ]
-requires-python = ">=3.14,<3.15"
+requires-python = ">=3.12,<3.15"
 dependencies = [
-    "photoshop-python-api @ git+https://github.com/pappnu/photoshop-python-api.git@type-annotation",
+    # Replaced photoshop-python-api with standalone processing and photocraft-cli backend
     "requests>=2.33.1,<3.0.0",
     "Pillow>=12.2.0,<13.0.0",
     "limits>=5.8.0,<6.0.0",
