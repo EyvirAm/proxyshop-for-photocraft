@@ -1,6 +1,7 @@
 """
 * Templates: Saga
 """
+from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from functools import cached_property
@@ -112,7 +113,10 @@ class SagaMod(NormalTemplate):
 
     def get_saga_stage_icon(self, stage: str) -> ArtLayer | LayerSet:
         if layer := psd.getLayer(stage, self.saga_group):
-            return layer.duplicate()
+            icon = layer.duplicate()
+            # Stage icons are kept hidden in the template as duplication sources.
+            icon.visible = True
+            return icon
         raise ValueError(f"Couldn't get icon for Saga stage '{stage}'.")
 
     """
