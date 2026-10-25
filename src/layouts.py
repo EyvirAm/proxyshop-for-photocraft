@@ -1,6 +1,7 @@
 """
 * Card Layout Data
 """
+from __future__ import annotations
 
 import re
 from collections.abc import Iterable, Sequence
@@ -1762,7 +1763,7 @@ class SplitLayout(NormalLayout):
     @cached_property
     def name_raw(self) -> str:
         """Sanitized card name to use for rendered image file."""
-        return f"{self.name[0]} _ {self.name[1]}"
+        return f"{self.names[0]} _ {self.names[1]}"
 
     @cached_property
     def type_line(self) -> str:
@@ -2095,5 +2096,6 @@ layout_map: dict[str, type[NormalLayout]] = {
     LayoutScryfall.Augment: NormalLayout,
     LayoutScryfall.Host: NormalLayout,
     LayoutScryfall.ArtSeries: TokenLayout,
+    LayoutScryfall.FrontCard: TokenLayout,
     LayoutScryfall.ReversibleCard: TransformLayout,
 }

@@ -1,6 +1,7 @@
 """
 * Enums: MTG Related Data
 """
+from __future__ import annotations
 
 import re
 from enum import StrEnum
@@ -79,6 +80,7 @@ class LayoutScryfall(StrEnum):
     DoubleFacedToken = "double_faced_token"
     Emblem = "emblem"
     Flip = "flip"
+    FrontCard = "front_card"
     Host = "host"
     Leveler = "leveler"
     MDFC = "modal_dfc"
@@ -188,6 +190,7 @@ scryfall_layout_category_map: dict[LayoutScryfall, LayoutCategory] = {
     LayoutScryfall.DoubleFacedToken: LayoutCategory.Transform,
     LayoutScryfall.Emblem: LayoutCategory.Normal,
     LayoutScryfall.Flip: LayoutCategory.Transform,
+    LayoutScryfall.FrontCard: LayoutCategory.Normal,
     LayoutScryfall.Host: LayoutCategory.Normal,
     LayoutScryfall.Leveler: LayoutCategory.Leveler,
     LayoutScryfall.MDFC: LayoutCategory.MDFC,

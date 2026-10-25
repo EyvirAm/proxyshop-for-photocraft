@@ -1,6 +1,7 @@
 """
 * Scryfall API Module
 """
+from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Sequence
 from datetime import date
@@ -73,6 +74,7 @@ FrameEffect = Literal[
     "fandfc",
     "upsidedowndfc",
     "spree",
+    "dark",
     # Non-official
     "meld",
 ]
@@ -199,16 +201,16 @@ class ScryfallCard(BaseModel):
     # Gameplay Fields
     all_parts: list[ScryfallRelatedCard] | None = None
     card_faces: list[ScryfallCardFace] | None = None
-    cmc: float
-    color_identity: list[MagicColor]
+    cmc: float = 0.0
+    color_identity: list[MagicColor] = []
     color_indicator: list[MagicColor] | None = None
     colors: list[MagicColor] | None = None
     defense: str | None = None
     edhrec_rank: int | None = None
     game_changer: bool | None = None
     hand_modifier: str | None = None
-    keywords: list[str]
-    legalities: dict[str, Legality]
+    keywords: list[str] = []
+    legalities: dict[str, Legality] = {}
     life_modifier: str | None = None
     loyalty: str | None = None
     mana_cost: str | None = None
@@ -217,9 +219,9 @@ class ScryfallCard(BaseModel):
     penny_rank: int | None = None
     power: str | None = None
     produced_mana: list[str] | None = None
-    reserved: bool
+    reserved: bool = False
     toughness: str | None = None
-    type_line: str
+    type_line: str = ""
 
     # Print Fields
     artist: str | None = None
@@ -918,12 +920,4 @@ def is_playable_card(card: ScryfallCard) -> bool:
     Returns:
         Valid scryfall data if check passed, else None.
     """
-    if card.set_type == "minigame":
-        # Ignore minigame insert cards
-        return False
-    if card.layout in ["art_series", "reversible_card"]:
-        # Ignore art series and reversible cards
-        # TODO: Implement support for reversible
-        return False
-    # Ignore theme insert cards (Jumpstart)
-    return not (card.set_type == "memorabilia" and "(Theme)" in card.name)
+    return card.set_type != "minigame"
