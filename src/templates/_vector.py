@@ -478,6 +478,11 @@ class VectorTemplate(NormalTemplate):
 
         # Enable Legendary Crown group and layers
         if self.crown_group:
+            # Some templates (vertical-mode.psd, borderless-vector.psd) keep the
+            # crown inside a wrapper group that starts hidden; reveal it so the
+            # nested crown group is actually drawn.
+            if isinstance((parent := self.crown_group.parent), LayerSet):
+                parent.visible = True
             self.crown_group.visible = True
             self.generate_layer(
                 group=self.crown_group, colors=self.crown_colors, masks=self.crown_masks

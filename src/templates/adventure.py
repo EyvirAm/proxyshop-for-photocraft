@@ -409,14 +409,3 @@ class AdventureVectorTemplate(AdventureVectorMod, VectorTemplate):
     @cached_property
     def enabled_shapes(self) -> list[ArtLayer | LayerSet | None]:
         return [self.border_shape, self.pinlines_legendary_shape, self.pt_shape]
-
-    """
-    METHODS
-    """
-
-    def enable_crown(self) -> None:
-        if self.crown_group and isinstance(
-            (parent := self.crown_group.parent), LayerSet
-        ):
-            parent.visible = True
-        super().enable_crown()
