@@ -1,6 +1,7 @@
 """
 * Handles Requests to the hexproof.io API
 """
+from __future__ import annotations
 
 from asyncio import gather, to_thread
 from collections.abc import Awaitable, Callable
@@ -61,13 +62,13 @@ def hexproof_request_wrapper[T, **P](
             requests.exceptions.RequestException,
             logger=None,
             max_tries=1,
-            max_time=1,
+            max_time=4,
         )
         def wrapper(*args: P.args, **kwargs: P.kwargs):
             try:
                 return func(*args, **kwargs)
             except Exception:
-                _logger.exception("Hexproof request failed")
+                _logger.debug("Hexproof request failed", exc_info=True)
                 raise
 
         return wrapper
@@ -82,19 +83,11 @@ def hexproof_request_wrapper[T, **P](
 
 @hexproof_request_wrapper("")
 def get_api_key(key: str) -> str:
-    """Get an API key from https://api.hexproof.io.
-
-    Args:
-        key: Name of the API key.
-
-    Returns:
-        API key string.
-
-    Raises:
-        RequestException if request was unsuccessful.
-    """
+    """Get an API key from https://api.hexproof.io."""
+    if key == "proxyshop.google.drive" and ENV.API_GOOGLE:
+        return ENV.API_GOOGLE
     url = HexURL.API.Keys.All / key
-    res = requests.get(str(url), headers=_hexproof_http_headers, timeout=(3, 3))
+    res = requests.get(str(url), headers=_hexproof_http_headers, timeout=(3, 4))
     if res.status_code == 200:
         return res.json().get("key", "")
     raise RequestException(
@@ -142,7 +135,7 @@ def get_metadata() -> dict[str, Meta]:
         RequestException if request was unsuccessful.
     """
     res = requests.get(
-        str(HexURL.API.Meta.All), headers=_hexproof_http_headers, timeout=(3, 3)
+        str(HexURL.API.Meta.All), headers=_hexproof_http_headers, timeout=(3, 4)
     )
     if res.status_code == 200:
         return {k: Meta(**v) for k, v in res.json().items()}
@@ -165,7 +158,7 @@ def get_sets() -> dict[str, HexproofSet]:
         RequestException if request was unsuccessful.
     """
     res = requests.get(
-        str(HexURL.API.Sets.All), headers=_hexproof_http_headers, timeout=(5, 5)
+        str(HexURL.API.Sets.All), headers=_hexproof_http_headers, timeout=(10, 20)
     )
     if res.status_code == 200:
         return HexproofSets.model_validate_json(res.content).root
@@ -202,12 +195,12 @@ def update_hexproof_cache() -> tuple[bool, str | None]:
     # Check against current metadata
     new_set_data: dict[str, HexproofSet] | None = None
     _current, _next = CON.metadata.get("sets"), meta.get("sets")
-    if not _current or not _next or _current.version != _next.version:
+    if _next and (not _current or _current.version != _next.version):
         try:
             # Download updated 'Set' data
             new_set_data = get_sets()
             updated = True
-        except RequestException, ValueError, OSError:
+        except (RequestException, ValueError, OSError):
             return False, "Unable to update 'Set' data from hexproof.io!"
 
     # Check against current symbol data
@@ -249,7 +242,7 @@ def update_hexproof_cache() -> tuple[bool, str | None]:
             # Download and unpack updated 'Symbols' assets
             new_symbols = _download_symbols(symbols_dl_url)
             updated = updated or bool(new_symbols)
-        except RequestException, FileNotFoundError:
+        except (RequestException, FileNotFoundError):
             return False, "Unable to download symbols package!"
 
     # Update metadata
@@ -294,7 +287,7 @@ def update_hexproof_cache() -> tuple[bool, str | None]:
             path=PATH.SRC_DATA_HEXPROOF_META,
         )
         return updated, None
-    except FileNotFoundError, OSError, ValueError:
+    except (FileNotFoundError, OSError, ValueError):
         return False, "Unable to update metadata from hexproof.io!"
 
 
