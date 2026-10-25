@@ -1,6 +1,7 @@
 """
 * CLASS TEMPLATES
 """
+from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from functools import cached_property
@@ -173,6 +174,9 @@ class ClassMod(NormalTemplate):
                 if self.stage_group:
                     # Use existing stage divider or create new one
                     stage = self.stage_group if i == 0 else self.stage_group.duplicate()
+                    # The template keeps the stage divider hidden; it only exists to be
+                    # duplicated and positioned, so reveal both it and its copies.
+                    stage.visible = True
                     cost, level = [*stage.artLayers][:2]
                     self.class_stage_layers.append(stage)
 
