@@ -1,6 +1,7 @@
 """
 * Helpers: Layer Effects
 """
+from __future__ import annotations
 
 from _ctypes import COMError
 from logging import getLogger
@@ -243,6 +244,81 @@ def apply_fx(layer: ArtLayer | LayerSet, effects: list[LayerEffects]) -> None:
     APP.instance.executeAction(
         APP.instance.sID("set"), main_action, DialogModes.DisplayNoDialogs
     )
+    if hasattr(layer, "_exec_photocraft"):
+        pc_effects = []
+        for fx in effects:
+            if isinstance(fx, EffectColorOverlay):
+                c = get_color(fx.color)
+                hex_c = f"#{int(round(c.rgb.red)):02x}{int(round(c.rgb.green)):02x}{int(round(c.rgb.blue)):02x}"
+                pc_effects.append(
+                    {
+                        "kind": "colorOverlay",
+                        "params": {"color": hex_c, "opacity": float(fx.opacity)},
+                    }
+                )
+            elif isinstance(fx, EffectGradientOverlay) and len(fx.colors) >= 2:
+                c0 = get_color(fx.colors[0].color)
+                c1 = get_color(fx.colors[-1].color)
+                h0 = f"#{int(round(c0.rgb.red)):02x}{int(round(c0.rgb.green)):02x}{int(round(c0.rgb.blue)):02x}"
+                h1 = f"#{int(round(c1.rgb.red)):02x}{int(round(c1.rgb.green)):02x}{int(round(c1.rgb.blue)):02x}"
+                pc_effects.append(
+                    {
+                        "kind": "gradientOverlay",
+                        "params": {
+                            "from": h0,
+                            "to": h1,
+                            "angle": float(fx.rotation),
+                            "opacity": float(fx.opacity),
+                            "scale": max(10.0, min(150.0, float(fx.scale))),
+                        },
+                    }
+                )
+            elif isinstance(fx, EffectBevel):
+                pc_effects.append(
+                    {
+                        "kind": "bevelEmboss",
+                        "params": {
+                            "depth": float(fx.depth),
+                            "size": float(fx.size),
+                            "soften": float(fx.softness),
+                            "angle": float(fx.rotation),
+                            "altitude": float(fx.altitude),
+                        },
+                    }
+                )
+            elif isinstance(fx, EffectDropShadow):
+                c = get_color(fx.color)
+                hex_c = f"#{int(round(c.rgb.red)):02x}{int(round(c.rgb.green)):02x}{int(round(c.rgb.blue)):02x}"
+                pc_effects.append(
+                    {
+                        "kind": "dropShadow",
+                        "params": {
+                            "color": hex_c,
+                            "opacity": float(fx.opacity),
+                            "angle": float(fx.rotation),
+                            "distance": float(fx.distance),
+                            "spread": float(fx.spread),
+                            "size": float(fx.size),
+                        },
+                    }
+                )
+            elif isinstance(fx, EffectStroke):
+                c = get_color(fx.color)
+                hex_c = f"#{int(round(c.rgb.red)):02x}{int(round(c.rgb.green)):02x}{int(round(c.rgb.blue)):02x}"
+                pc_effects.append(
+                    {
+                        "kind": "stroke",
+                        "params": {
+                            "color": hex_c,
+                            "size": float(fx.weight),
+                            "opacity": float(fx.opacity),
+                        },
+                    }
+                )
+        if pc_effects:
+            layer._exec_photocraft(
+                "layer.layerStyle.replace", {"layer": layer.id, "effects": pc_effects}
+            )
 
 
 def apply_fx_bevel(action: ActionDescriptor, fx: EffectBevel) -> None:
