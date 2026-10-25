@@ -618,6 +618,23 @@ _ID_TO_STR: dict[int, str] = {}
 _STR_TO_ID: dict[str, int] = {}
 
 
+def _clipped_layer_ids(doc: "Document") -> set[int]:
+    """Engine layers currently carrying a clipping mask, by id."""
+    info = doc._exec_photocraft("document.inspect", {})
+    found: set[int] = set()
+    if not isinstance(info, dict):
+        return found
+
+    def walk(items: list[dict[str, Any]]) -> None:
+        for item in items:
+            if item.get("clipped"):
+                found.add(int(item["id"]))
+            walk(item.get("children") or [])
+
+    walk(info.get("layers") or [])
+    return found
+
+
 def _register_id(name: str) -> int:
     if name in _STR_TO_ID:
         return _STR_TO_ID[name]
@@ -1071,6 +1088,15 @@ class Application(Photoshop):
                 clipped = u_obj.getBoolean(id_group) if u_obj.hasKey(id_group) else False
                 prev_active = doc._active_layer
                 lid: int | None = None
+                # Creating the fill layer above the group and then moving it inside
+                # transiently re-bases the clipping masks of layers above the group, and
+                # moving it away releases them (PhotoCraft's clip-group rules). Remember
+                # them so they can be re-clipped to the group afterwards.
+                clipped_before = (
+                    _clipped_layer_ids(doc)
+                    if isinstance(prev_active, LayerSet)
+                    else set()
+                )
 
                 if u_obj.hasKey(id_type) and u_obj.getType(id_type) == DescValueType.ObjectType:
                     t_obj = u_obj.getObjectValue(id_type)
@@ -1128,6 +1154,14 @@ class Application(Photoshop):
                             "layer.moveTo",
                             {"layer": lid, "target": prev_active.id, "position": "into"},
                         )
+                        if clipped_before:
+                            for lost in sorted(
+                                clipped_before - _clipped_layer_ids(doc)
+                            ):
+                                doc._exec_photocraft(
+                                    "layer.setProps",
+                                    {"layer": lost, "clipped": True},
+                                )
                     if clipped:
                         doc._exec_photocraft("layer.setProps", {"layer": lid, "clipped": True})
 
