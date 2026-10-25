@@ -1,6 +1,7 @@
 """
 * Load Global Application State
 """
+from __future__ import annotations
 
 from src._config import AppConfig
 from src._state import AppConstants, AppEnvironment

@@ -1,6 +1,7 @@
 """
 * Frame Logic Module
 """
+from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from functools import cache, cached_property

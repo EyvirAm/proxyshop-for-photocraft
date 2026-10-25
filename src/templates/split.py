@@ -1,6 +1,7 @@
 """
 * Templates: Split
 """
+from __future__ import annotations
 
 from _ctypes import COMError
 from collections.abc import Callable, Sequence

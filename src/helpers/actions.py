@@ -1,6 +1,7 @@
 """
 * Helpers: Actions
 """
+from __future__ import annotations
 
 from photoshop.api import ActionDescriptor, ActionReference
 from photoshop.api.enumerations import DialogModes

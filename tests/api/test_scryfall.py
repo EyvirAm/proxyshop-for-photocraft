@@ -1,3 +1,4 @@
+from __future__ import annotations
 from itertools import batched
 
 from pytest import fixture

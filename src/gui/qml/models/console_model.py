@@ -1,3 +1,4 @@
+from __future__ import annotations
 from logging import DEBUG, Formatter, LogRecord, getLogger
 from re import Match, compile
 

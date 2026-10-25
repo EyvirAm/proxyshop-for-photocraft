@@ -1,6 +1,7 @@
 """
 * Templates Modules
 """
+from __future__ import annotations
 
 from src.templates._core import *
 from src.templates._cosmetic import *

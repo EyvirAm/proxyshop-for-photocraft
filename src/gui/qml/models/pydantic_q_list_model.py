@@ -1,3 +1,4 @@
+from __future__ import annotations
 from itertools import chain
 from logging import getLogger
 from typing import Any, override

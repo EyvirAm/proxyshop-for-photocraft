@@ -1,6 +1,7 @@
 """
 * Miscellaneous utils that are awaiting refinement/relocation.
 """
+from __future__ import annotations
 
 import csv
 import json
@@ -197,7 +198,7 @@ def try_all_getters(desc: ActionDescriptor, type_id: int) -> dict[str, Any]:
                 # Getter may have returned an ActionList, grab the first object
                 result = get_action_items(result.getObjectValue(0))
             values[k] = result
-        except COMError, NameError, KeyError:
+        except (COMError, NameError, KeyError):
             # Skip this getter
             pass
     return values

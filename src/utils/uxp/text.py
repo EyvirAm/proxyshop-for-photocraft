@@ -1,3 +1,4 @@
+from __future__ import annotations
 from _ctypes import COMError
 from typing import Literal, NotRequired, TypedDict, Unpack
 

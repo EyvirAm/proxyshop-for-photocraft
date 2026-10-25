@@ -1,4 +1,12 @@
-from asyncio import EventLoop, Future, InvalidStateError, get_running_loop, run
+from __future__ import annotations
+import asyncio
+from asyncio import Future, InvalidStateError, get_running_loop, run
+
+EventLoop = getattr(
+    asyncio,
+    "EventLoop",
+    getattr(asyncio, "ProactorEventLoop", asyncio.SelectorEventLoop),
+)
 from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
 from logging import getLogger

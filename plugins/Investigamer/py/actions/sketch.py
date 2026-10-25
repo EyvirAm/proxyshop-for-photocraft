@@ -1,6 +1,7 @@
 """
 * Sketchify Action Module
 """
+from __future__ import annotations
 
 from photoshop.api import ActionDescriptor, ActionList, ActionReference
 from photoshop.api.enumerations import DialogModes

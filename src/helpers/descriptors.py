@@ -1,9 +1,10 @@
 """
 * Helpers: PS Object Descriptors
 """
+from __future__ import annotations
 
 from collections.abc import Callable
-from ctypes import COMError
+from _ctypes import COMError
 from logging import getLogger
 from os import PathLike
 

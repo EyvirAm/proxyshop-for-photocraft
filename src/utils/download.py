@@ -1,6 +1,7 @@
 """
 * Utils: Downloads and Updates
 """
+from __future__ import annotations
 
 import shutil
 from collections.abc import Callable
@@ -38,6 +39,6 @@ def download_cloudfront(
         )
         shutil.move(temp_path, path)
         unpack_archive(path)
-    except requests.RequestException, FileExistsError, FileNotFoundError:
+    except (requests.RequestException, FileExistsError, FileNotFoundError):
         return False
     return True

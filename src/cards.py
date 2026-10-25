@@ -2,6 +2,7 @@
 * Card Data Module
 * Handles raw card data fetching and processing
 """
+from __future__ import annotations
 
 from collections.abc import Iterable
 from json import dumps
@@ -423,7 +424,7 @@ def locate_symbols(
             symbol_string, symbol_color = symbol_map[symbol]
             text = text.replace(symbol, symbol_string, 1)
             symbol_indices.append((start, symbol_color))
-        except KeyError, IndexError:
+        except (KeyError, IndexError):
             if logger:
                 logger.warning(f"Symbol not recognized: {symbol}")
             text = text.replace(symbol, symbol.strip("{}"))
@@ -460,7 +461,7 @@ def locate_italics(
                 symbol = italic[start : end + 1]
                 try:
                     italic = italic.replace(symbol, symbol_map[symbol][0])
-                except KeyError, IndexError:
+                except (KeyError, IndexError):
                     if logger:
                         logger.warning(f"Symbol not recognized: {symbol}")
                     st = st.replace(symbol, symbol.strip("{}"))

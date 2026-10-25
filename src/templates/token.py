@@ -2,6 +2,7 @@
 * Templates: Token
 * Treated as 'Normal' templates, separated for better organization.
 """
+from __future__ import annotations
 
 from collections.abc import Callable
 from functools import cached_property

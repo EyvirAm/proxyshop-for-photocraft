@@ -1,7 +1,8 @@
+from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from concurrent.futures import ThreadPoolExecutor
 from logging import getLogger
-from os import process_cpu_count
+from os import cpu_count as process_cpu_count
 from pathlib import Path
 
 from PySide6.QtCore import Property, QObject, Signal, Slot

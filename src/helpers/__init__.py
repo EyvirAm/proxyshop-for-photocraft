@@ -1,6 +1,7 @@
 """
 * Photoshop Helper Modules
 """
+from __future__ import annotations
 
 from src.helpers.actions import *
 from src.helpers.adjustments import *

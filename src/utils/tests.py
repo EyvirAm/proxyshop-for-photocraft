@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import RootModel
 
 from src._config import AppConfig

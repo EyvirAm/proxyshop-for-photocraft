@@ -1,3 +1,4 @@
+from __future__ import annotations
 from asyncio import CancelledError, Future, Task, create_task, get_running_loop
 from collections.abc import Callable, Iterable, Mapping
 from logging import getLogger

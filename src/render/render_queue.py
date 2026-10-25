@@ -1,3 +1,4 @@
+from __future__ import annotations
 from _ctypes import COMError
 from asyncio import Future, Task
 from logging import getLogger

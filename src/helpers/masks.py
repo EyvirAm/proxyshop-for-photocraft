@@ -1,6 +1,7 @@
 """
 * Helpers: Masks
 """
+from __future__ import annotations
 
 from _ctypes import COMError
 from enum import StrEnum

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from functools import cached_property

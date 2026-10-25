@@ -7,6 +7,7 @@
     - Architecture for mask and shape enabling based on card archetype
 * Vector templates can be challenging for beginners, but have huge benefits.
 """
+from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from functools import cached_property

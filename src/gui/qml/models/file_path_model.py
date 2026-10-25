@@ -1,3 +1,4 @@
+from __future__ import annotations
 from PySide6.QtCore import Property, QObject, QUrl, Signal, Slot
 
 from src._state import PATH

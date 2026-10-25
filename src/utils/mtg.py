@@ -1,6 +1,7 @@
 """
 * MTG Related Utiltiies
 """
+from __future__ import annotations
 
 from src.enums.mtg import CardTextPatterns as _P
 from src.schema.colors import ColorObject, SymbolColorMap

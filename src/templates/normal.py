@@ -1,6 +1,7 @@
 """
 * Normal Templates
 """
+from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Sequence
 from functools import cached_property

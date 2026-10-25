@@ -1,6 +1,7 @@
 """
 * Schema: Colors and Gradients
 """
+from __future__ import annotations
 
 from collections.abc import Sequence
 from functools import cache

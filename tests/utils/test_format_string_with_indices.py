@@ -1,3 +1,4 @@
+from __future__ import annotations
 from src.utils.text import format_string_with_indices
 
 

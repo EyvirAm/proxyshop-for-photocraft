@@ -1,3 +1,4 @@
+from __future__ import annotations
 from functools import cached_property
 from json import dumps
 from pathlib import Path

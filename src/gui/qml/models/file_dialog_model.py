@@ -1,3 +1,4 @@
+from __future__ import annotations
 from asyncio import Future, get_running_loop
 from collections.abc import Iterable
 from enum import IntEnum

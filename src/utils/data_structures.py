@@ -1,3 +1,4 @@
+from __future__ import annotations
 import tomllib
 from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path

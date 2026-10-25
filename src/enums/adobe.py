@@ -1,6 +1,7 @@
 """
 * Enums for Photoshop Actions
 """
+from __future__ import annotations
 
 from enum import Enum, StrEnum
 from typing import Literal

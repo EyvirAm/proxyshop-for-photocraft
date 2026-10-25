@@ -1,3 +1,4 @@
+from __future__ import annotations
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from itertools import batched

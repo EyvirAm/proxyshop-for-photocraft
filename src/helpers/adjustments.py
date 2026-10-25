@@ -1,6 +1,7 @@
 """
 * Helpers: Adjustment Layers
 """
+from __future__ import annotations
 
 from typing import NotRequired, TypedDict, Unpack
 

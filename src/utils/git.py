@@ -1,3 +1,4 @@
+from __future__ import annotations
 from logging import getLogger
 from subprocess import DEVNULL, CalledProcessError, check_output, run
 

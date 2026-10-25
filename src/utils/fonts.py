@@ -1,12 +1,14 @@
 """
 * Font Utils
 """
+from __future__ import annotations
 
 import os
 import os.path as osp
 import re
 from contextlib import suppress
-from ctypes import COMError, windll, wintypes
+from _ctypes import COMError
+from ctypes import windll, wintypes
 from functools import cached_property
 from logging import getLogger
 from pathlib import Path
@@ -128,7 +130,7 @@ def is_font_available_in_ps(
 ) -> bool:
     try:
         return bool(ps_app.fonts[font_post_script_name])
-    except COMError, KeyError:
+    except (COMError, KeyError):
         return False
 
 
