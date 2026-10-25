@@ -114,6 +114,42 @@ class Document(Photoshop):
             return self.app.photocraft_execute(command, params)
         return None
 
+    def inspect_layers_raw(self) -> list[dict[str, Any]]:
+        """Layer tree as Photocraft reports it (bounds are `[x, y, width, height]`)."""
+        info = self._exec_photocraft("document.inspect", {})
+        if isinstance(info, dict) and isinstance(info.get("layers"), list):
+            return info["layers"]
+        return []
+
+    def refresh_layer_bounds(
+        self, layer_id: int
+    ) -> tuple[float, float, float, float] | None:
+        """Fetch a layer's pixel bounds from Photocraft, refreshing the cached value."""
+
+        def walk(items: list[dict[str, Any]]) -> tuple[float, float, float, float] | None:
+            for item in items:
+                if int(item.get("id", -1)) == layer_id:
+                    b = item.get("bounds")
+                    if isinstance(b, list) and len(b) == 4:
+                        return (
+                            float(b[0]),
+                            float(b[1]),
+                            float(b[0] + b[2]),
+                            float(b[1] + b[3]),
+                        )
+                    return None
+                found = walk(item.get("children") or [])
+                if found is not None:
+                    return found
+            return None
+
+        bounds = walk(self.inspect_layers_raw()) if layer_id is not None else None
+        if bounds is not None:
+            layer = self.find_layer_by_id(layer_id)
+            if layer is not None:
+                layer._bounds = bounds
+        return bounds
+
     def _remove_child(self, child: Any) -> None:
         if child in self.artLayers._items:
             self.artLayers._items.remove(child)

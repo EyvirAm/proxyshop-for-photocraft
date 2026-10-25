@@ -164,9 +164,56 @@ class LayerSet(Layer):
         else:
             res = self._exec_photocraft("layer.duplicate", {"layer": self._id})
         new_id = res.get("layer") if isinstance(res, dict) else None
-        dup = self._clone_tree(target_parent, new_id)
+        dup = (
+            self._clone_from_backend(target_parent, int(new_id))
+            if new_id is not None
+            else self._clone_tree(target_parent, new_id)
+        )
         if target_parent is not None and hasattr(target_parent, "layerSets"):
             target_parent.layerSets._items.append(dup)
+        return dup
+
+    def _clone_from_backend(self, target_parent: Any, new_id: int) -> LayerSet:
+        """Build a duplicate group wired to the backend's real layer ids and texts."""
+        doc = self._doc
+        node: dict[str, Any] | None = None
+
+        def find(items: list[dict[str, Any]]) -> dict[str, Any] | None:
+            for item in items:
+                if int(item.get("id", -1)) == new_id:
+                    return item
+                found = find(item.get("children") or [])
+                if found is not None:
+                    return found
+            return None
+
+        if doc is not None and hasattr(doc, "inspect_layers_raw"):
+            node = find(doc.inspect_layers_raw())
+        if node is None:
+            return self._clone_tree(target_parent, new_id)
+        b = node.get("bounds")
+        bounds = (
+            (float(b[0]), float(b[1]), float(b[0] + b[2]), float(b[1] + b[3]))
+            if isinstance(b, list) and len(b) == 4
+            else self._bounds
+        )
+        dup = LayerSet(
+            parent=target_parent,
+            name=str(node.get("name", f"{self._name} copy")),
+            layer_id=new_id,
+            bounds=bounds,
+            visible=bool(node.get("visible", True)),
+            opacity=self._opacity,
+            blend_mode=self._blend_mode,
+        )
+        dup._doc = doc
+        if doc is not None and hasattr(doc, "_layer_by_id"):
+            doc._layer_by_id[new_id] = dup
+        children = node.get("children")
+        if isinstance(children, list) and hasattr(doc, "_populate_layers_from_photocraft_json"):
+            doc._populate_layers_from_photocraft_json(children, dup)
+        elif isinstance(children, list):
+            self._clone_tree(target_parent, new_id)
         return dup
 
     def merge(self) -> ArtLayer:

@@ -1167,12 +1167,35 @@ class Application(Photoshop):
             return ActionDescriptor()
 
         if event_name == "mergeLayersNew":
-            doc._exec_photocraft("layer.mergeLayers", {})
-            if not isinstance(doc._active_layer, ArtLayer):
+            old_layer = doc._active_layer
+            res = doc._exec_photocraft("layer.mergeLayers", {})
+            merged_id = (
+                int(res["layer"])
+                if isinstance(res, dict) and "layer" in res
+                else None
+            )
+            if merged_id is not None:
+                # Drop stale objects for the merged-away group/layers.
+                if old_layer is not None:
+                    doc._remove_child(old_layer)
+                merged = doc.find_layer_by_id(merged_id)
+                if not isinstance(merged, ArtLayer):
+                    merged = ArtLayer(
+                        parent=doc,
+                        name=old_layer.name if old_layer else "Merged Layer",
+                        layer_id=merged_id,
+                    )
+                    doc.artLayers._items.insert(0, merged)
+                    doc._layer_by_id[merged_id] = merged
+                doc.refresh_layer_bounds(merged_id)
+                doc._active_layer = merged
+            elif not isinstance(old_layer, ArtLayer):
                 m_lyr = ArtLayer(
                     parent=doc,
-                    name=doc._active_layer.name if doc._active_layer else "Merged Layer",
-                    bounds=doc._active_layer.bounds if doc._active_layer else (0.0, 0.0, float(doc.width), float(doc.height)),
+                    name=old_layer.name if old_layer else "Merged Layer",
+                    bounds=old_layer.bounds
+                    if old_layer
+                    else (0.0, 0.0, float(doc.width), float(doc.height)),
                 )
                 doc.artLayers._items.insert(0, m_lyr)
                 doc._layer_by_id[m_lyr.id] = m_lyr
