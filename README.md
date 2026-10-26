@@ -35,6 +35,12 @@ If you need help with this app or wish to troubleshoot an issue, [please join ou
 
 <!-- TODO: Add citations for the source of various fonts. -->
 
+> **Fork note:** the templates are downloaded separately and are not part of
+> this repository. If you update the template bundle, reapply the documented
+> fixes in [Template patches](docs/template-patches.md) and run
+> `python scripts/patch_templates.py --check`. Currently this covers the
+> missing Planeswalker Transform front `convertdfc` icon.
+
 # 🚀 Setup Guide
 1. Download the [latest release](https://github.com/MrTeferi/MTG-Proxyshop/releases), extract it to a folder of your choice.
 2. Install the fonts included in the `fonts/` folder, please note that `Proxyglyph` may need to be updated in future releases.
