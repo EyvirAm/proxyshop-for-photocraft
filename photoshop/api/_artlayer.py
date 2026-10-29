@@ -88,6 +88,21 @@ class ArtLayer(Layer):
             )
             self._update_bounds_from_type_result(res)
 
+    def _set_text_box(
+        self, left: float, top: float, width: float, height: float
+    ) -> None:
+        """Convert a text layer to paragraph text in the given local box."""
+        res = self._exec_photocraft(
+            "type.edit",
+            {
+                "layer": self._id,
+                "box": [float(left), float(top), float(width), float(height)],
+            },
+        )
+        self._update_bounds_from_type_result(res)
+        info = self._exec_photocraft("type.info", {"layer": self._id})
+        self._update_bounds_from_type_result(info)
+
     def _sync_style_to_photocraft(self, **kwargs: Any) -> None:
         params: dict[str, Any] = {"layer": self._id}
         if "font" in kwargs and kwargs["font"]:
