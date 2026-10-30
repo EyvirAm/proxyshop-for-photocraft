@@ -123,6 +123,7 @@ class MessageDialogContentModel(QObject):
         """Ask QML to show the overlay above the PhotoCraft window."""
         self._manual_edit_overlay_shown.emit(int(window_handle or 0), title, text)
 
+    @Slot()
     def hide_manual_edit_overlay(self) -> None:
         """Hide the overlay shown for a manual editing session."""
         self._manual_edit_overlay_hidden.emit()
@@ -176,7 +177,7 @@ class MessageDialogContentModel(QObject):
 
         width = min(760, max(360, int(rect.width() * 0.72)))
         self._manual_edit_overlay_width = width
-        self._manual_edit_overlay_height = 118
+        self._manual_edit_overlay_height = 132
         self._manual_edit_overlay_x = rect.x() + (rect.width() - width) // 2
         self._manual_edit_overlay_y = rect.y() + 48
 

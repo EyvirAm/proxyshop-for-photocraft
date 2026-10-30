@@ -518,7 +518,7 @@ ApplicationWindow {
         y: renderMessageDialogContentModel.manual_edit_overlay_y
         width: renderMessageDialogContentModel.manual_edit_overlay_width
         height: renderMessageDialogContentModel.manual_edit_overlay_height
-        flags: Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus | Qt.WindowTransparentForInput
+        flags: Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus
         color: "transparent"
         title: "Proxyshop manual editing"
 
@@ -548,7 +548,21 @@ ApplicationWindow {
                     font.pixelSize: 14
                     wrapMode: Text.WordWrap
                 }
+
+                Text {
+                    width: parent.width
+                    text: "Double-click to hide"
+                    color: "#B0B0B0"
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignRight
+                }
             }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onDoubleClicked: renderMessageDialogContentModel.hide_manual_edit_overlay()
         }
 
         Timer {
