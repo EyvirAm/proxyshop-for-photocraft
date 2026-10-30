@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import cached_property
+from math import hypot
 
 from photoshop.api._artlayer import ArtLayer
 from photoshop.api._layerSet import LayerSet
@@ -91,6 +92,33 @@ class TransformMod(BaseTemplate):
 
     def enable_transform_layers_front(self) -> None:
         """Enables layers that are required by front face transform cards."""
+        if self.is_flipside_creature:
+            self._fit_flipside_rules_textbox()
+
+    def _fit_flipside_rules_textbox(self) -> None:
+        """Keep the front rules text clear of the back face P/T indicator."""
+        rules = self.text_layer_rules
+        flipside_pt = self.text_layer_flipside_pt
+        if rules is None or flipside_pt is None:
+            return
+
+        info = rules._exec_photocraft("type.info", {"layer": rules.id})
+        if not isinstance(info, dict):
+            return
+        shape = info.get("shape")
+        if not isinstance(shape, dict) or not isinstance(shape.get("Box"), dict):
+            return
+
+        transform = info.get("transform") or [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+        scale_x = hypot(float(transform[0]), float(transform[1])) or 1.0
+        left, top = float(transform[4]), float(transform[5])
+        box = shape["Box"]
+        height = float(box["height"])
+        gap = float(self.app.scale_by_dpi(40))
+        width = (float(flipside_pt.bounds[0]) - gap - left) / scale_x
+        if width <= 0 or width >= float(box["width"]):
+            return
+        rules._set_text_box_at(left, top, width, height)
 
     def enable_transform_layers_back(self) -> None:
         """Enables layers that are required by back face transform cards."""
