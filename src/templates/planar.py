@@ -179,13 +179,34 @@ class PlanarTemplate(StarterTemplate):
             return None
         return float(rect[1])
 
+    def _move_textbox_mask_to(self, top: float) -> None:
+        """Move the textbox's mask so the dark band starts at ``top``."""
+        textbox = self.textbox_group
+        if not textbox:
+            return
+        current = self._textbox_mask_top()
+        if current is None:
+            return
+        delta = top - current
+        if abs(delta) < 0.5:
+            return
+        textbox._exec_photocraft(
+            "edit.transform",
+            {
+                "layer": textbox.id,
+                "dx": 0,
+                "dy": int(round(delta)),
+                "target": "mask",
+            },
+        )
+
     def fit_planar_text(self) -> None:
         """Keep both rules-text layers inside the brown textbox and its dark band.
 
-        The dark band is a gradient on the textbox group's mask.  Keep it at
-        the template's position and reserve it for the chaos block; the static
-        block lives above it.  Both blocks are scaled together because the
-        official cards use one font size for the whole rules panel.
+        Lay the static and chaos abilities out as two paragraphs of a single
+        text block: centre the block in the panel, then move the textbox mask
+        so the dark band covers the lower (chaos) paragraph.  Both paragraphs
+        share one font size, as on the official cards.
         """
         static = self.text_layer_static_ability
         chaos = self.text_layer_chaos_ability
@@ -211,41 +232,42 @@ class PlanarTemplate(StarterTemplate):
         static_size = float(static.textItem.size)
         static_height = get_layer_height(static)
 
+        chaos_left = chaos.bounds[0] if chaos else left
         if has_chaos:
             self._set_text_box(
-                chaos, chaos.bounds[0], right, chaos.bounds[1], measure_bottom
+                chaos, chaos_left, right, chaos.bounds[1], measure_bottom
             )
             chaos_size = float(chaos.textItem.size)
             chaos_height = get_layer_height(chaos)
 
             if self.has_dark_band:
-                # The template's mask already puts the dark band where the
-                # official frame has it.  Keep that position and fit both
-                # blocks into their own regions: static above the band, chaos
-                # inside it.  They share a font size on the real cards.
-                band_top = self._textbox_mask_top()
-                if band_top is None:
-                    band_top = safe_bottom - 120
-                static_max = max(1.0, band_top - gap - static_top)
-                chaos_max = max(1.0, safe_bottom - band_top - gap)
-                limit = min(
-                    static_max / max(1.0, static_height),
-                    chaos_max / max(1.0, chaos_height),
-                )
-                if limit < 0.999:
-                    factor = max(0.5, limit)
+                # Lay both paragraphs out as one block and centre that block
+                # in the full text area.  Any spare room is split between the
+                # paragraph gap and the outer margins, so short cards (Krosa)
+                # do not leave all the empty space between the blocks.
+                area_top = static_top
+                available = safe_bottom - area_top
+                min_gap = 36
+                for _ in range(10):
+                    static_height = get_layer_height(static)
+                    chaos_height = get_layer_height(chaos)
+                    total = static_height + chaos_height + min_gap
+                    if total <= available:
+                        break
+                    factor = max(0.5, available / total)
+                    if factor >= 0.999:
+                        break
                     for layer in (static, chaos):
                         size = float(layer.textItem.size) * factor
                         set_text_size_and_leading(layer, size, size)
 
-                # Use any spare room to restore the template's size, but never
-                # push either block out of its region.
+                # Restore the template size when the paragraphs fit again.
                 for _ in range(6):
                     static_height = get_layer_height(static)
                     chaos_height = get_layer_height(chaos)
+                    current_total = static_height + chaos_height
                     grow = min(
-                        static_max / max(1.0, static_height),
-                        chaos_max / max(1.0, chaos_height),
+                        (available - min_gap) / max(1.0, current_total),
                         static_size / float(static.textItem.size),
                         chaos_size / float(chaos.textItem.size),
                         1.08,
@@ -255,22 +277,62 @@ class PlanarTemplate(StarterTemplate):
                     for layer in (static, chaos):
                         size = float(layer.textItem.size) * grow
                         set_text_size_and_leading(layer, size, size)
-                    if (
-                        get_layer_height(static) > static_max
-                        or get_layer_height(chaos) > chaos_max
+                    if get_layer_height(static) + get_layer_height(chaos) > (
+                        available - min_gap
                     ):
                         for layer in (static, chaos):
                             size = float(layer.textItem.size) / grow
                             set_text_size_and_leading(layer, size, size)
                         break
 
+                static_height = get_layer_height(static)
                 chaos_height = get_layer_height(chaos)
-                chaos_top = safe_bottom - chaos_height
-                if abs(chaos.bounds[1] - chaos_top) >= 0.5:
-                    offset = chaos_top - chaos.bounds[1]
-                    chaos.translate(0, offset)
-                    if symbol := self.text_layer_chaos_symbol:
-                        symbol.translate(0, offset)
+                slack = max(
+                    0.0,
+                    available - (static_height + chaos_height + min_gap),
+                )
+                paragraph_gap = min_gap + (slack * 0.4)
+                block_height = static_height + chaos_height + paragraph_gap
+                margin = max(0.0, (available - block_height) / 2)
+                # Official short planes sit a little below the geometric
+                # centre of the panel; nudge the block down without ever
+                # pushing it past the bottom of the text area.
+                start_top = area_top + margin + min(24.0, margin * 0.5)
+                chaos_top = start_top + static_height + paragraph_gap
+
+                symbol = self.text_layer_chaos_symbol
+                symbol_offset = (
+                    symbol.bounds[1] - chaos.bounds[1] if symbol else 0.0
+                )
+                for layer, top in ((static, start_top), (chaos, chaos_top)):
+                    if abs(layer.bounds[1] - top) >= 0.5:
+                        layer.translate(0, top - layer.bounds[1])
+                symbol_top = chaos_top + symbol_offset
+                if symbol and abs(symbol.bounds[1] - symbol_top) >= 0.5:
+                    symbol.translate(0, symbol_top - symbol.bounds[1])
+
+                # The dark band covers the lower paragraph and starts in the
+                # middle of the gap between both paragraphs.
+                band_top = chaos_top - (paragraph_gap * 0.5)
+                self._move_textbox_mask_to(band_top)
+
+                # Final paragraph boxes, tall enough to keep descenders and
+                # multi-line blocks from being clipped.
+                self._set_text_box(
+                    static, left, right, start_top, start_top + static_height + 8
+                )
+                self._set_text_box(
+                    chaos,
+                    chaos_left,
+                    right,
+                    chaos_top,
+                    chaos_top + chaos_height + 8,
+                )
+                # The common final box update below must keep the centred
+                # position; otherwise it would snap the static block back to
+                # its original template top.
+                static_top = start_top
+                static_max = static_height + 8
 
             else:
                 # No band: use the whole panel and let the chaos block continue
