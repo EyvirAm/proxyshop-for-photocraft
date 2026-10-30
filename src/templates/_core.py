@@ -76,6 +76,7 @@ if TYPE_CHECKING:
         MessageDialogContentModel,
     )
     from src.render.setup import RenderOperation
+    from src.utils.manual_edit import ManualEditSession
 
 _logger = getLogger(__name__)
 
@@ -99,6 +100,7 @@ class BaseTemplate:
         # Setup manual properties
         self.layout = layout
         self.config = layout.config
+        self._manual_edit_session: ManualEditSession | None = None
 
     """
     * Enabled Method Lists
@@ -834,10 +836,25 @@ class BaseTemplate:
         elif art_reference:
             psd.frame_layer(layer=art_layer, ref=art_reference)
 
-        if self.config.pause_for_manual_art_alignment and not self.pause(
-            "Adjust the art alignment manually."
-        ):
-            return
+        if self.config.pause_for_manual_art_alignment:
+            if not self.pause(
+                "Manual art alignment: adjust the artwork in PhotoCraft, "
+                "save the file, then press OK.",
+                manual_edit=True,
+                manual_edit_title="Manual art alignment",
+                manual_edit_message=(
+                    "Adjust the artwork, then save the file with Ctrl+S.\n"
+                    "Return to the Proxyshop window and press OK to continue."
+                ),
+            ):
+                return
+            art_layer = self.art_layer or psd.getLayer(
+                art_layer.name, self.docref
+            )
+            if not art_layer:
+                raise ValueError(
+                    "Failed to get the art layer after manual editing."
+                )
 
         # Perform content aware fill if needed
         if self.is_content_aware_enabled:
@@ -1625,16 +1642,140 @@ class BaseTemplate:
     def cancel(self) -> None:
         self.event.set()
 
-    def pause(self, message: str | None, show_photoshop: bool = True) -> bool:
-        response = self.render_operation.pause_sync(message, show_photoshop)
+    @staticmethod
+    def _manual_edit_cache_preserved() -> frozenset[str]:
+        """Cached values that must survive reloading a manually edited PSD."""
+        return frozenset(
+            {
+                "event",
+                "file_dialog",
+                "message_dialog",
+                "output_directory",
+                "output_file_name",
+                "render_operation",
+            }
+        )
+
+    def _invalidate_manual_edit_caches(self) -> None:
+        """Drop cached layer references after the document is reloaded."""
+        preserved = self._manual_edit_cache_preserved()
+        for name in list(self.__dict__):
+            if name in preserved:
+                continue
+            if isinstance(getattr(type(self), name, None), cached_property):
+                del self.__dict__[name]
+
+    def _start_manual_edit(
+        self, title: str | None, message: str | None
+    ) -> bool:
+        if self._manual_edit_session is not None:
+            return True
+
+        from src.utils.manual_edit import ManualEditSession
+
+        session = ManualEditSession.start(self, title=title, message=message)
+        if session is None:
+            return False
+        self._manual_edit_session = session
+        return True
+
+    def _finish_manual_edit(self, apply: bool) -> None:
+        session = self._manual_edit_session
+        self._manual_edit_session = None
+        if session is None:
+            return
+
+        changed = False
+        try:
+            changed = session.stop()
+        except Exception:
+            _logger.exception(
+                "Unable to close the PhotoCraft manual editing session."
+            )
+        try:
+            if apply and changed and session.psd_path is not None:
+                _logger.info(
+                    "Reloading the manually edited document: %s",
+                    session.psd_path,
+                )
+                try:
+                    self.app.load(session.psd_path)
+                except Exception:
+                    _logger.exception(
+                        "Unable to reload the manually edited PSD. "
+                        "Falling back to the original template."
+                    )
+                    self.app.load(self.layout.template_file)
+                self._invalidate_manual_edit_caches()
+            elif apply:
+                _logger.warning(
+                    "The manual editing file was not modified. "
+                    "Continuing with the unedited render."
+                )
+        except Exception:
+            _logger.exception(
+                "Unable to refresh the document after manual editing."
+            )
+            raise
+        finally:
+            session.cleanup()
+
+    def pause(
+        self,
+        message: str | None,
+        show_photoshop: bool = True,
+        manual_edit: bool = False,
+        manual_edit_title: str | None = None,
+        manual_edit_message: str | None = None,
+    ) -> bool:
+        manual_edit_active = False
+        if manual_edit and not self.render_operation.do_not_pause:
+            if not self._start_manual_edit(
+                manual_edit_title, manual_edit_message
+            ):
+                _logger.error(
+                    "Manual editing is unavailable. "
+                    "Continuing without manual editing."
+                )
+                return True
+            manual_edit_active = True
+
+        response = False
+        try:
+            response = self.render_operation.pause_sync(message, show_photoshop)
+        finally:
+            if manual_edit_active:
+                self._finish_manual_edit(response)
         if self.config.minimize_photoshop:
             self.app.set_window_state(WindowState.MINIMIZE)
         return response
 
     async def pause_async(
-        self, message: str | None, show_photoshop: bool = True
+        self,
+        message: str | None,
+        show_photoshop: bool = True,
+        manual_edit: bool = False,
+        manual_edit_title: str | None = None,
+        manual_edit_message: str | None = None,
     ) -> bool:
-        response = await self.render_operation.pause(message, show_photoshop)
+        manual_edit_active = False
+        if manual_edit and not self.render_operation.do_not_pause:
+            if not self._start_manual_edit(
+                manual_edit_title, manual_edit_message
+            ):
+                _logger.error(
+                    "Manual editing is unavailable. "
+                    "Continuing without manual editing."
+                )
+                return True
+            manual_edit_active = True
+
+        response = False
+        try:
+            response = await self.render_operation.pause(message, show_photoshop)
+        finally:
+            if manual_edit_active:
+                self._finish_manual_edit(response)
         if self.config.minimize_photoshop:
             self.app.set_window_state(WindowState.MINIMIZE)
         return response
@@ -1732,8 +1873,17 @@ class BaseTemplate:
             return False
 
         # Manual edit step?
-        if self.config.exit_early:
-            await self.pause_async("Rendering paused for manual editing.")
+        if self.config.exit_early and not await self.pause_async(
+            "Manual editing: edit the card in PhotoCraft, save the file, "
+            "then press OK.",
+            manual_edit=True,
+            manual_edit_title="Manual editing",
+            manual_edit_message=(
+                "Edit the card, then save the file with Ctrl+S.\n"
+                "Return to the Proxyshop window and press OK to continue."
+            ),
+        ):
+            return False
 
         # Make sure output folder exists
         self.output_directory.mkdir(parents=True, exist_ok=True)

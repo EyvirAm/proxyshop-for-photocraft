@@ -225,13 +225,13 @@ default = 5
 
 [TEMPLATES."Manual.Edit"]
 title = "Manual Editing Mode"
-desc = """Pause the render process before saving to allow for manual edits."""
+desc = """Pause the render process before saving and open the render in PhotoCraft for manual edits. Requires the PhotoCraft desktop application."""
 type = "bool"
 default = 0
 
 [TEMPLATES."Manual.Art.Alignment.Pause"]
 title = "Pause for manual art alignment"
-desc = """Pause the render process after automatic art alignment to allow for manual adjustments."""
+desc = """Pause the render process after automatic art alignment to allow manual adjustments in PhotoCraft. Requires the PhotoCraft desktop application."""
 type = "bool"
 default = 0
 

@@ -31,6 +31,31 @@ def set_window_state(window_handle: int, state: WindowState) -> None:
     win32gui.ShowWindow(window_handle, state)
 
 
+def get_window_handle_by_process_id(process_id: int) -> int | None:
+    """Find the largest visible top-level window owned by a process."""
+    handles: list[int] = []
+
+    def enum_callback(handle: int, _: object) -> None:
+        if not win32gui.IsWindowVisible(handle) or not win32gui.GetWindowText(handle):
+            return
+        try:
+            _, window_pid = win32process.GetWindowThreadProcessId(handle)
+        except Exception:
+            return
+        if window_pid == process_id:
+            handles.append(handle)
+
+    win32gui.EnumWindows(enum_callback, None)
+    if not handles:
+        return None
+
+    def area(handle: int) -> int:
+        left, top, right, bottom = win32gui.GetWindowRect(handle)
+        return max(0, right - left) * max(0, bottom - top)
+
+    return max(handles, key=area)
+
+
 def get_window_handle_by_process_file_path_suffix(suffix: str) -> int | None:
     """
     Tries to look up a window handle that belongs to a prcess that has a module

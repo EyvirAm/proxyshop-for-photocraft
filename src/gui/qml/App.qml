@@ -3,6 +3,7 @@ import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 
 import qml.components
 import qml.dialogs
@@ -507,6 +508,55 @@ ApplicationWindow {
         id: renderMessageDialog
 
         dialogContentModel: renderMessageDialogContentModel
+    }
+
+    Window {
+        id: manualEditOverlay
+
+        visible: renderMessageDialogContentModel.manual_edit_overlay_visible
+        x: renderMessageDialogContentModel.manual_edit_overlay_x
+        y: renderMessageDialogContentModel.manual_edit_overlay_y
+        width: renderMessageDialogContentModel.manual_edit_overlay_width
+        height: renderMessageDialogContentModel.manual_edit_overlay_height
+        flags: Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus | Qt.WindowTransparentForInput
+        color: "transparent"
+        title: "Proxyshop manual editing"
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 10
+            color: "#ED141414"
+            border.color: "#80FFFFFF"
+            border.width: 1
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 6
+
+                Text {
+                    text: renderMessageDialogContentModel.manual_edit_overlay_title
+                    color: "white"
+                    font.pixelSize: 17
+                    font.bold: true
+                }
+
+                Text {
+                    width: parent.width
+                    text: renderMessageDialogContentModel.manual_edit_overlay_text
+                    color: "#E8E8E8"
+                    font.pixelSize: 14
+                    wrapMode: Text.WordWrap
+                }
+            }
+        }
+
+        Timer {
+            interval: 500
+            repeat: true
+            running: manualEditOverlay.visible
+            onTriggered: renderMessageDialogContentModel.refresh_manual_edit_overlay()
+        }
     }
 
     Connections {
