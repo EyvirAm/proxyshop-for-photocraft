@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtCore
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Window
 
@@ -55,6 +56,14 @@ ApplicationWindow {
         // Model preferences
         property string selectedTemplateName
         property string batchModeTemplateSelections
+    }
+
+    Timer {
+        id: photocraftPromptTimer
+        interval: 250
+        repeat: false
+        running: photocraftSetupModel.required
+        onTriggered: photocraftFileDialog.open()
     }
 
     Component.onCompleted: {
@@ -584,6 +593,29 @@ ApplicationWindow {
                 renderMessageDialog.accept();
             }
             renderMessageDialog.open();
+        }
+    }
+
+    FileDialog {
+        id: photocraftFileDialog
+        title: "Locate PhotoCraft"
+        fileMode: FileDialog.OpenFile
+        nameFilters: [
+            "PhotoCraft CLI (photocraft-cli.exe)",
+            "PhotoCraft (photocraft.exe)",
+            "Executables (*.exe)",
+            "All (*)"
+        ]
+        onAccepted: photocraftSetupModel.set_path(selectedFile.toString())
+        onRejected: photocraftSetupModel.cancel()
+    }
+
+    Connections {
+        target: photocraftSetupModel
+
+        function onErrorChanged(): void {
+            if (photocraftSetupModel.required && photocraftSetupModel.error.length > 0)
+                photocraftFileDialog.open();
         }
     }
 

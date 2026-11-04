@@ -22,6 +22,7 @@ from src.utils.data_structures import dump_model, parse_model
 from src.utils.fonts import check_app_fonts
 from src.utils.github import get_github_releases
 from src.utils.hexapi import get_api_key, update_hexproof_cache
+from src.utils.photocraft import locate_photocraft_cli
 from src.utils.threading import ThreadInitializedInstance
 
 _logger = getLogger(__name__)
@@ -156,11 +157,16 @@ def run_startup_checks(
     template_updater: TemplateUpdaterModel,
 ) -> None:
     """Initialize PhotoCraft and spawn the startup checks in background threads."""
-    photoshop_initializer.initialize()
-    if photoshop_initializer.ready:
-        photoshop_checks(photoshop_initializer.instance)
+    if locate_photocraft_cli():
+        photoshop_initializer.initialize()
+        if photoshop_initializer.ready:
+            photoshop_checks(photoshop_initializer.instance)
+        else:
+            photoshop_initializer.add_listener(photoshop_checks)
     else:
-        photoshop_initializer.add_listener(photoshop_checks)
+        _logger.warning(
+            "PhotoCraft CLI not found. The GUI will ask for its location."
+        )
 
     checks = [
         lambda: update_set_data(con),

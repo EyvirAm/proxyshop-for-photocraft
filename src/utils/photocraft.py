@@ -13,35 +13,96 @@ from typing import Any
 
 from photoshop.api import Application
 
+from src._state import PATH
+
 _logger = logging.getLogger(__name__)
 
+_CLI_PREFERENCE_FILE = "photocraft_cli.json"
 
-def find_photocraft_cli() -> str:
-    """Locate the photocraft-cli binary from env, system install, local repo, or PATH."""
+
+def _cli_preference_path() -> Path:
+    """Return the file used to remember a manually selected PhotoCraft CLI."""
+    return PATH.SRC_DATA_PREFERENCES / _CLI_PREFERENCE_FILE
+
+
+def resolve_photocraft_cli(path: Path) -> Path | None:
+    """Resolve a user-selected path to the PhotoCraft CLI executable.
+
+    Accepts the CLI itself, the GUI executable (using its sibling CLI), or a
+    PhotoCraft installation directory.
+    """
+    if path.is_dir():
+        for name in ("photocraft-cli.exe", "photocraft-cli"):
+            candidate = path / name
+            if candidate.is_file():
+                return candidate
+        return None
+    if path.name.lower() == "photocraft.exe":
+        sibling = path.with_name("photocraft-cli.exe")
+        if sibling.is_file():
+            return sibling
+    return path if path.is_file() else None
+
+
+def save_photocraft_cli(path: Path) -> None:
+    """Persist the selected PhotoCraft CLI for future launches."""
+    preference = _cli_preference_path()
+    preference.parent.mkdir(parents=True, exist_ok=True)
+    preference.write_text(json.dumps({"path": str(path)}), encoding="utf-8")
+    os.environ["PHOTOCRAFT_CLI"] = str(path)
+
+
+def load_saved_photocraft_cli() -> Path | None:
+    """Return the previously selected PhotoCraft CLI, if it still exists."""
+    preference = _cli_preference_path()
+    try:
+        data = json.loads(preference.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    path = Path(str(data.get("path", "")))
+    return path if path.is_file() else None
+
+
+def locate_photocraft_cli() -> Path | None:
+    """Find a usable PhotoCraft CLI without showing any UI."""
     env_cli = os.getenv("PHOTOCRAFT_CLI")
-    if env_cli and Path(env_cli).exists():
-        return env_cli
+    if env_cli:
+        resolved = resolve_photocraft_cli(Path(env_cli))
+        if resolved:
+            return resolved
+
+    saved = load_saved_photocraft_cli()
+    if saved:
+        return saved
 
     program_files = Path(os.getenv("ProgramFiles", r"C:\Program Files"))
     local_appdata = Path(os.getenv("LOCALAPPDATA", r"C:\Users\usuario\AppData\Local"))
-    repo_root = Path(__file__).resolve().parents[3] / "photocraft-repo"
+    home = Path.home()
+    repo_roots = [home / "photocraft-bigpsd", home / "photocraft-repo"]
     candidates = [
         program_files / "PhotoCraft" / "photocraft-cli.exe",
         local_appdata / "Programs" / "PhotoCraft" / "photocraft-cli.exe",
-        repo_root / "target" / "release" / "photocraft-cli.exe",
-        repo_root / "target" / "debug" / "photocraft-cli.exe",
-        repo_root / "target" / "release" / "photocraft-cli",
-        repo_root / "target" / "debug" / "photocraft-cli",
+        *[
+            root / "target" / build / name
+            for root in repo_roots
+            for build in ("release", "debug")
+            for name in ("photocraft-cli.exe", "photocraft-cli")
+        ],
     ]
     for candidate in candidates:
-        if candidate.exists():
-            return str(candidate)
+        if candidate.is_file():
+            return candidate
 
-    which_cli = shutil.which("photocraft-cli")
-    if which_cli:
-        return which_cli
+    if which_cli := shutil.which("photocraft-cli"):
+        return Path(which_cli)
+    return None
 
-    return env_cli or "photocraft-cli"
+
+def find_photocraft_cli() -> str:
+    """Locate the photocraft-cli binary, returning its path or a PATH lookup."""
+    if resolved := locate_photocraft_cli():
+        return str(resolved)
+    return "photocraft-cli"
 
 
 class PhotocraftRpcServer:

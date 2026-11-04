@@ -29,6 +29,7 @@ def launch_gui(
     from src.gui.qml.models.message_dialog_content_model import (
         MessageDialogContentModel,
     )
+    from src.gui.qml.models.photocraft_setup_model import PhotocraftSetupModel
     from src.gui.qml.models.plugin_updater_model import PluginUpdaterModel
     from src.gui.qml.models.render_operations_model import RenderOperationsModel
     from src.gui.qml.models.settings_model import SettingsModel
@@ -84,6 +85,7 @@ def launch_gui(
     )
     settings_model = SettingsModel(settings_tree_model)
     image_transform_model = ImageTransformModel(file_dialog_model=file_dialog_model)
+    photocraft_setup_model = PhotocraftSetupModel(APP)
 
     root_context = engine.rootContext()
     root_context.setContextProperty("filePathModel", file_path_model)
@@ -101,6 +103,7 @@ def launch_gui(
     root_context.setContextProperty("settingsTreeModel", settings_tree_model)
     root_context.setContextProperty("settingsModel", settings_model)
     root_context.setContextProperty("imageTransformModel", image_transform_model)
+    root_context.setContextProperty("photocraftSetupModel", photocraft_setup_model)
     root_context.setContextProperty(
         "github_url", f"https://github.com/{ENV.APP_UPDATES_REPO}"
     )

@@ -131,6 +131,11 @@ queue, settings, plugin manager and file/message dialogs. Python objects are
 exposed to QML with Qt properties, slots and signals; the models keep the
 Pydantic data structures in sync with the UI.
 
+If no PhotoCraft CLI is found at startup, the GUI asks the user for
+`photocraft-cli.exe` (or the PhotoCraft installation folder) and remembers the
+choice in `src/data/preferences/photocraft_cli.json`. The path is also exported
+as `PHOTOCRAFT_CLI` for the current session.
+
 ## Testing and documentation
 
 - `pytest -q` runs the API, card, text and PhotoCraft integration tests.
