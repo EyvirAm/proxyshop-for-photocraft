@@ -15,7 +15,7 @@ from types import ModuleType
 from typing import Annotated, Any, Literal, NotRequired, Protocol, TypedDict
 
 import yarl
-from omnitils.api.gdrive import gdrive_download_file, gdrive_get_metadata
+from omnitils.api.gdrive import gdrive_download_file
 from omnitils.modules import get_local_module, import_module_from_path, import_package
 from omnitils.strings import normalize_ver
 from py7zr import SevenZipFile
@@ -41,7 +41,11 @@ from src.enums.mtg import (
     layout_map_types_display,
 )
 from src.utils.data_structures import dump_model, parse_model
-from src.utils.download import download_cloudfront
+from src.utils.download import (
+    download_cloudfront,
+    get_gdrive_metadata,
+    list_gdrive_folder,
+)
 from src.utils.event import SubscribableEvent
 
 _logger = getLogger(__name__)
@@ -73,12 +77,16 @@ SymbolRarity = Literal["80", "B", "C", "H", "M", "R", "S", "T", "U", "WM"]
 
 
 class SymbolsMeta(BaseModel):
+    """Metadata describing a published symbol set (date, version and URI)."""
+
     date: str
     version: str
     uri: str
 
 
 class SymbolsSet(BaseModel):
+    """Symbol set contents: set aliases, image routes, rarities and symbols."""
+
     aliases: dict[str, str]
     routes: dict[str, str]
     rarities: dict[SymbolRarity, str]
@@ -86,17 +94,23 @@ class SymbolsSet(BaseModel):
 
 
 class SymbolsWatermark(BaseModel):
+    """Watermark symbols and their optional image routes."""
+
     routes: dict[str, str] | None = None
     symbols: list[str]
 
 
 class SymbolsManifest(BaseModel):
+    """Root model for the symbols manifest file."""
+
     meta: SymbolsMeta
     set: SymbolsSet
     watermark: SymbolsWatermark
 
 
 class PluginInfo(BaseModel):
+    """Plugin metadata declared under the ``PLUGIN`` section of a manifest."""
+
     name: str | None = None
     author: str | None = None
     desc: str | None = None
@@ -107,6 +121,16 @@ class PluginInfo(BaseModel):
 
 
 class TemplateFileInfo(BaseModel):
+    """Manifest entry for one PSD template file.
+
+    Attributes:
+        name: Optional display name.
+        id: Optional Google Drive file ID used as a download fallback.
+        desc: Optional description shown in the updater.
+        version: Optional version string recorded in the manifest.
+        templates: Mapping of display names to template classes and layouts.
+    """
+
     name: str | None = None
     id: str | None = None
     desc: str | None = None
@@ -115,15 +139,23 @@ class TemplateFileInfo(BaseModel):
 
 
 TemplateFileInfoRoot = RootModel[dict[str, TemplateFileInfo]]
+# Maps each template file name to its ``TemplateFileInfo``.
 
 
 class PluginManifest(BaseModel):
+    """Parsed plugin manifest (``manifest.yml``/``.json``).
+
+    The ``PLUGIN`` table holds plugin metadata; every other top-level key is a
+    template file name mapped to its ``TemplateFileInfo``.
+    """
+
     plugin: Annotated[PluginInfo, Field(alias="PLUGIN")]
     files: Annotated[dict[str, TemplateFileInfo], Field(exclude=True)] = {}
 
     @model_validator(mode="before")
     @classmethod
     def extra_validator(cls, data: Any) -> Any:
+        """Move template file tables into ``files`` and validate each one."""
         if isinstance(data, dict):
             exclude_keys = [*cls.model_fields.keys(), "PLUGIN"]
             for key, value in data.items():  # pyright: ignore[reportUnknownVariableType]
@@ -134,6 +166,7 @@ class PluginManifest(BaseModel):
 
     @model_validator(mode="after")
     def post_validate(self) -> PluginManifest:
+        """Expose the stashed template tables through ``files``."""
         if self.model_extra:
             self.files = self.model_extra
         return self
@@ -147,23 +180,29 @@ class PluginManifest(BaseModel):
 
 
 class RemotePluginDefinitionBase(BaseModel):
+    """Base fields shared by remote plugin definitions."""
+
     name: str
     author: str
 
 
 class RemoteGithubPluginDefinition(RemotePluginDefinitionBase):
+    """Remote plugin hosted in a GitHub repository."""
+
     github_author: str
     github_repo: str
 
 
 class RemoteGitPluginDefinition(RemotePluginDefinitionBase):
+    """Remote plugin hosted in an arbitrary Git repository."""
+
     git_repo: Url
 
 
 class RemotePluginDefinitions(
     RootModel[dict[str, RemoteGithubPluginDefinition | RemoteGitPluginDefinition]]
 ):
-    pass
+    """Root model mapping plugin IDs to their remote definitions."""
 
 
 _template_import_lock = Lock()
@@ -237,6 +276,7 @@ class AppPlugin:
 
     @cached_property
     def id(self) -> str:
+        """str: Plugin identifier, derived from its directory name."""
         return self._root.name
 
     @cached_property
@@ -250,6 +290,7 @@ class AppPlugin:
 
     @property
     def root(self) -> Path:
+        """Path: Root directory of the plugin."""
         return self._root
 
     @cached_property
@@ -317,6 +358,7 @@ class AppPlugin:
 
     @property
     def module(self) -> ModuleType | None:
+        """ModuleType: The plugin's Python module, loaded on first access."""
         if not self._module:
             self.load_module()
         return self._module
@@ -443,6 +485,7 @@ class AppPlugin:
         return list(self.template_map.values())
 
     def remove(self) -> None:
+        """Delete the plugin directory from disk."""
         rmtree(self._root)
 
 
@@ -485,6 +528,7 @@ TemplateFileVersionsModel = RootModel[dict[str, str]]
 
 
 def get_template_file_versions() -> TemplateFileVersionsModel:
+    """Load the installed template versions file, empty if missing/invalid."""
     if PATH.SRC_DATA_VERSIONS.exists():
         try:
             return parse_model(PATH.SRC_DATA_VERSIONS, TemplateFileVersionsModel)
@@ -517,6 +561,7 @@ def get_template_class(
 def sort_layout_categories(
     items: set[LayoutCategory], place_first: LayoutCategory | None = None
 ) -> list[LayoutCategory]:
+    """Sort layout categories, optionally forcing one to the front."""
     first_item: LayoutCategory | None = None
     out = list(items)
     if place_first and (place_first in items):
@@ -529,6 +574,8 @@ def sort_layout_categories(
 
 
 class RenderableTemplate(Protocol):
+    """Protocol for objects that can resolve templates for a given layout."""
+
     name: str
     plugin: AppPlugin | None
 
@@ -540,11 +587,15 @@ class RenderableTemplate(Protocol):
 
 
 class TemplateClassDetails(TypedDict):
+    """Config handler and supported layouts for one template class."""
+
     config: ConfigHandler
     layouts: list[LayoutType]
 
 
 class NamedTemplate(RenderableTemplate):
+    """A template display name grouped across one or more template classes."""
+
     def __init__(
         self,
         name: str,
@@ -558,6 +609,7 @@ class NamedTemplate(RenderableTemplate):
 
     @cached_property
     def layout_categories(self) -> set[LayoutCategory]:
+        """Layout categories covered by all template classes in this group."""
         categories: set[LayoutCategory] = set()
         for template_class_details in self.template_classes.values():
             for layout in template_class_details["layouts"]:
@@ -565,10 +617,12 @@ class NamedTemplate(RenderableTemplate):
         return categories
 
     def get_config(self, class_name: str) -> ConfigHandler | None:
+        """Return the config handler for ``class_name``, if it exists."""
         if class_name in self.template_classes:
             return self.template_classes[class_name]["config"]
 
     def has_config(self, layout_category: LayoutCategory | None = None) -> bool:
+        """Whether a matching template class has user configuration."""
         for template_class_details in self.template_classes.values():
             if layout_category:
                 contains_layout: bool = False
@@ -583,12 +637,14 @@ class NamedTemplate(RenderableTemplate):
         return False
 
     def get_preview_image_path(self, layout: LayoutCategory) -> Path | None:
+        """Return the preview image path matching ``layout``, if any."""
         for class_name, template_class_details in self.template_classes.items():
             for layout_type in template_class_details["layouts"]:
                 if LayoutCategory.matches_layout_type(layout, layout_type):
                     return self.parent.get_path_preview(class_name, layout_type)
 
     def get_class_name_for_layout(self, layout_type: LayoutType) -> str | None:
+        """Return the template class handling ``layout_type``, if any."""
         for class_name, template_class_details in self.template_classes.items():
             if layout_type in template_class_details["layouts"]:
                 return class_name
@@ -597,6 +653,7 @@ class NamedTemplate(RenderableTemplate):
     def get_class_name_and_file_for_layout(
         self, layout_type: LayoutType
     ) -> tuple[str, Path] | None:
+        """Return the template class and PSD path used for ``layout_type``."""
         if class_name := self.get_class_name_for_layout(layout_type):
             return (class_name, self.parent.path_psd)
 
@@ -673,9 +730,20 @@ class AppTemplate:
             else self.generate_template_name()
         )
 
-    @cached_property
+    @property
     def google_drive_id(self) -> str | None:
-        """The template's Google Drive file ID, fallback to None."""
+        """The template's Google Drive file ID, fallback to None.
+
+        Files are matched by name in the configured template folder first, so
+        re-uploading a template to Drive changes the download source without
+        editing ``manifest.yml``. Falls back to the ID recorded in the manifest.
+        """
+        if folder_id := self.env.TEMPLATES_DRIVE_FOLDER:
+            file_id = list_gdrive_folder(folder_id, self.env.API_GOOGLE).get(
+                self.file_name
+            )
+            if file_id:
+                return file_id
         return self._info.id
 
     @cached_property
@@ -729,6 +797,7 @@ class AppTemplate:
 
     @cached_property
     def path_templates(self) -> Path:
+        """Path: Directory where this template's PSD file is stored."""
         return self.plugin.path_templates if self.plugin else PATH.TEMPLATES
 
     @cached_property
@@ -804,6 +873,7 @@ class AppTemplate:
 
     @cached_property
     def supported_layout_categories(self) -> list[LayoutCategory]:
+        """Layout categories supported by this template, with Normal first."""
         return sort_layout_categories(
             {
                 layout_map_types[layout_type]
@@ -830,6 +900,7 @@ class AppTemplate:
 
     @cached_property
     def all_classes_and_layouts(self) -> dict[str, list[LayoutType]]:
+        """Map each template class to every layout it supports."""
         classes_and_layouts: dict[str, list[LayoutType]] = {}
         for class_map in self.manifest_map.values():
             for cls_name, layouts in class_map.items():
@@ -891,13 +962,19 @@ class AppTemplate:
             return False
 
         # Get our metadata
-        if not (data := gdrive_get_metadata(self.google_drive_id, self.env.API_GOOGLE)):
+        if not (data := get_gdrive_metadata(self.google_drive_id, self.env.API_GOOGLE)):
             print(f"{self.name} ({self.file_name}) not found on Google Drive")
             return False
 
-        # Cache update data
+        # Cache update data. The Drive description can hold a semantic version;
+        # when it is empty (or not a version), fall back to the file's
+        # modification time so re-uploading a template publishes a new version.
         self._update = {
-            "version": data.get("description", "v1.0.0"),
+            "version": (
+                data.get("description")
+                or data.get("modifiedTime")
+                or "v1.0.0"
+            ),
             "name": data.get("name", self.file_name),
             "size": data["size"],
         }
@@ -937,6 +1014,7 @@ class AppTemplate:
         """
 
         def get_fail_message() -> str:
+            """Message logged when a template update fails."""
             return f"Failed to update template: {self.name}"
 
         if self.path_download:
@@ -1045,11 +1123,15 @@ class AppTemplate:
 
 
 class AssembledTemplateInstalledArgs(TypedDict):
+    """Payload emitted when one of the grouped templates is installed."""
+
     sender: AssembledTemplate
     origin: AppTemplate
 
 
 class AssembledTemplateConfigChangedArgs(TypedDict):
+    """Payload emitted when a template class gains or loses user config."""
+
     sender: AssembledTemplate
     class_name: str
     config: ConfigHandler
@@ -1057,6 +1139,8 @@ class AssembledTemplateConfigChangedArgs(TypedDict):
 
 
 class AssembledTemplate(RenderableTemplate):
+    """One display name assembled from every manifest entry that uses it."""
+
     def __init__(
         self, name: str, templates: list[NamedTemplate], plugin: AppPlugin | None = None
     ) -> None:
@@ -1095,6 +1179,7 @@ class AssembledTemplate(RenderableTemplate):
 
     @cached_property
     def layout_categories(self) -> set[LayoutCategory]:
+        """Union of the layout categories supported by its templates."""
         categories: set[LayoutCategory] = set()
         return categories.union(
             *[template.layout_categories for template in self.templates]
@@ -1102,6 +1187,7 @@ class AssembledTemplate(RenderableTemplate):
 
     @property
     def installed_template_files(self) -> list[str]:
+        """File names of the grouped templates that are installed."""
         return [
             parent_template.file_name
             for parent_template in {templ.parent for templ in self.templates}
@@ -1110,6 +1196,7 @@ class AssembledTemplate(RenderableTemplate):
 
     @property
     def missing_template_files(self) -> list[str]:
+        """File names of the grouped templates that are not installed yet."""
         return [
             parent_template.file_name
             for parent_template in {templ.parent for templ in self.templates}
@@ -1117,6 +1204,7 @@ class AssembledTemplate(RenderableTemplate):
         ]
 
     def is_installed(self, layout_category: LayoutCategory | None = None) -> bool:
+        """Whether any template for the given category is installed."""
         for template in self.templates:
             if layout_category and layout_category not in template.layout_categories:
                 continue
@@ -1126,6 +1214,7 @@ class AssembledTemplate(RenderableTemplate):
         return False
 
     def has_config(self, layout_category: LayoutCategory | None = None) -> bool:
+        """Whether any template for the given category has user config."""
         for template in self.templates:
             if layout_category and layout_category not in template.layout_categories:
                 continue
@@ -1135,11 +1224,13 @@ class AssembledTemplate(RenderableTemplate):
         return False
 
     def get_config(self, class_name: str) -> ConfigHandler | None:
+        """Return the config handler owned by any of its template classes."""
         for template in self.templates:
             if conf_mgr := template.get_config(class_name):
                 return conf_mgr
 
     def get_preview_image_path(self, layout: LayoutCategory) -> Path | None:
+        """Return the first preview image path matching ``layout``."""
         for template in self.templates:
             if preview_path := template.get_preview_image_path(layout):
                 return preview_path
@@ -1147,6 +1238,7 @@ class AssembledTemplate(RenderableTemplate):
     def get_class_name_and_file_for_layout(
         self, layout_type: LayoutType
     ) -> tuple[str, Path] | None:
+        """Return the template class and PSD path used for ``layout_type``."""
         for template in self.templates:
             if class_name := template.get_class_name_for_layout(layout_type):
                 return (class_name, template.parent.path_psd)
@@ -1168,6 +1260,8 @@ class AssembledTemplate(RenderableTemplate):
 
 
 class TemplateLibrary:
+    """All built-in and plugin templates, grouped by plugin and display name."""
+
     def __init__(
         self,
         con: AppConstants,
@@ -1193,12 +1287,14 @@ class TemplateLibrary:
             )
 
     def save_template_versions(self) -> None:
+        """Persist installed template versions when they changed."""
         if self.initial_versions != self.versions:
             dump_model(PATH.SRC_DATA_VERSIONS, self.versions)
 
     def get_templates_for_layout_category(
         self, layout_category: LayoutCategory
     ) -> list[AssembledTemplate]:
+        """Return every installed template that supports ``layout_category``."""
         templates: list[AssembledTemplate] = []
         for template in self.built_in_templates_by_name.values():
             if template.is_installed(layout_category):
@@ -1237,6 +1333,8 @@ class TemplateLibrary:
 
 
 class PluginLibrary:
+    """Installed plugins and the template library derived from them."""
+
     def __init__(
         self,
         con: AppConstants,
@@ -1259,11 +1357,13 @@ class PluginLibrary:
 
     @property
     def template_library(self) -> TemplateLibrary:
+        """The template library, built on first access if necessary."""
         if self._template_library:
             return self._template_library
         return self.construct_template_library()
 
     def construct_template_library(self) -> TemplateLibrary:
+        """Rebuild the template library and notify listeners."""
         self._template_library = TemplateLibrary(
             self._con,
             self._env,
@@ -1277,6 +1377,7 @@ class PluginLibrary:
         return self._template_library
 
     def add_plugin(self, path: Path) -> AppPlugin:
+        """Load a plugin from ``path`` and rebuild the template library."""
         plugin = AppPlugin(
             self._con,
             self._env,
@@ -1291,6 +1392,7 @@ class PluginLibrary:
         return plugin
 
     def remove_plugin(self, plugin_id: str) -> AppPlugin | None:
+        """Delete an installed plugin and rebuild the template library."""
         try:
             if plugin := self.plugins.get(plugin_id, None):
                 plugin.remove()
@@ -1354,6 +1456,7 @@ def get_all_templates(
 
 
 def get_symbols_manifest() -> SymbolsManifest | None:
+    """Load the bundled symbols manifest, or None when it is missing."""
     if PATH.SRC_IMG_SYMBOLS_MANIFEST.exists():
         return SymbolsManifest.model_validate_json(
             PATH.SRC_IMG_SYMBOLS_MANIFEST.read_bytes()

@@ -232,14 +232,14 @@ pw-extended.psd:
         - planeswalker
 
 pw-tf-front.psd:
-  id: "1fwhWb4BHRRjs2KoGZhLMGtQ3ngmeeQ-o"
+  id: "1pO7XlBmetRLEylu5QG6UvdZ6Q7D2pyAn"
   templates:
     Normal:
       PlaneswalkerTFTemplate:
         - pw_tf_front
 
 pw-tf-front-extended.psd:
-  id: "1TtHwTkDhWl5jJi3b_OiMa-E4izhfcTK7"
+  id: "1Owip-4P5nGsNTs17uxH8NPMbiIFoTEqy"
   templates:
     Borderless:
       PlaneswalkerTFBorderlessTemplate:

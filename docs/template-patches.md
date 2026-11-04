@@ -8,7 +8,26 @@ with a release).
 This page records those fixes. Run `python scripts/patch_templates.py --check`
 before packaging a fork/release to verify they are present.
 
+## Template source folder
+
+Templates are downloaded from the shared Google Drive folder set in
+`TEMPLATES_DRIVE_FOLDER` (default:
+`1CkgrLFTh1lDQ1mgzustL_893IDJ8EQ3a`, the [fork template folder](https://drive.google.com/drive/folders/1CkgrLFTh1lDQ1mgzustL_893IDJ8EQ3a)).
+
+Files are matched by name, so re-uploading a template with the same name is
+enough to publish a new version; the updater picks it up without editing
+`src/data/manifest.yml`. Files that are not present in the folder keep using
+the ID recorded in the manifest. Folder listing requires `API_GOOGLE`.
+
+> **Note:** the updater uses the file's Drive **description** as its version
+> when it is set; otherwise it falls back to the file's **modification time**,
+> so replacing a template automatically publishes a new version. To publish a
+> readable version, set the description in Drive (for example `v1.0.1`).
+
 ## Planeswalker Transform front: missing `convertdfc` icon
+
+The two copies currently in the shared Drive folder already include this layer;
+run `python scripts/patch_templates.py --check` to confirm.
 
 **Files:** `templates/pw-tf-front.psd`, `templates/pw-tf-front-extended.psd`
 
@@ -19,7 +38,7 @@ planeswalkers whose layout falls back to the generic convert icon, for example
 
 **Cause:** `PlaneswalkerTFTemplate` looks up `Transform/Front/<transform_icon>`.
 For those cards `NormalLayout.transform_icon` is `TransformIcons.CONVERT`, i.e.
-the layer name `convertdfc`. The current front templates only contain
+the layer name `convertdfc`. Unpatched front template bundles only contain
 `compasslanddfc`, `originpwdfc`, `mooneldrazidfc` and `sunmoondfc`, so
 `psd.getLayer(...)` returns `None` and no icon is shown.
 

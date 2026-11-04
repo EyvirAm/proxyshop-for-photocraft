@@ -174,8 +174,14 @@ def _get_proj_version(path: Path) -> str:
 
 
 class AppEnvironment(BaseSettings):
+    """Application settings, populated from environment variables, ``env.yml``
+    and ``env.default.yml`` (in that order of precedence).
+    """
+
     API_GOOGLE: str = ""
     API_AMAZON: str = ""
+    # Google Drive folder used as the template download source.
+    TEMPLATES_DRIVE_FOLDER: str = "1CkgrLFTh1lDQ1mgzustL_893IDJ8EQ3a"
     PS_ERROR_DIALOG: bool = False
     PS_VERSION: str | None = None
     HEADLESS: bool = False
@@ -197,6 +203,7 @@ class AppEnvironment(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Apply sources in priority order: env vars, then YAML files."""
         # First entry has highest priority
         return (
             env_settings,
@@ -211,13 +218,18 @@ class AppEnvironment(BaseSettings):
 
 
 class WatermarkFormat(TypedDict):
+    """Visual settings for one watermark variant."""
+
     scale: float
 
 
 WatermarkFormats = RootModel[dict[str, WatermarkFormat]]
+# Maps each watermark name to its ``WatermarkFormat``.
 
 
 class CustomUserDefinitions(BaseModel):
+    """User overrides for fonts and text spacing values."""
+
     # Fonts
     font_rules_text_italic: str | None = None
     font_rules_text_bold: str | None = None
