@@ -1,3 +1,8 @@
+"""
+* Utils: Inputs
+
+Resolve card inputs and matching image/data files.
+"""
 from __future__ import annotations
 from asyncio import gather, to_thread
 from collections.abc import Awaitable, Callable, Iterable, Sequence
@@ -38,11 +43,13 @@ def match_images_with_data_files(
     results: list[CardDetails | tuple[CardDetails, ScryfallCard]] = []
 
     def log_data_exception(file: Path) -> None:
+        """Log data exception."""
         _logger.exception(
             f"Data file <i>{file}</i> failed to validate. Please correct the reported errors in the data and then try again. Since the file selection was invalid nothing will be added to the render queue."
         )
 
     def add_card(card: CardDetails) -> None:
+        """Add card."""
         card_name = card["name"]
 
         idx = find_index(data_files, lambda item: item["name"] == card_name)
@@ -104,12 +111,14 @@ async def get_cards_from_details(
     async def batch_fetch_and_queue(
         batch: Iterable[tuple[CardIdentifier, list[CardDetails]]],
     ) -> None:
+        """Batch fetch and queue."""
         cards = await to_thread(get_batch_of_cards, batch)
         await callback(cards)
 
     async def single_fetch_and_queue(
         card: tuple[CardIdentifier, list[CardDetails]],
     ) -> None:
+        """Single fetch and queue."""
         if scryfall_card := await to_thread(get_card_data, card[0], config):
             for crd in card[1]:
                 await callback(((crd, scryfall_card),))

@@ -1,3 +1,8 @@
+"""
+* GUI: Template List Model
+
+QML model for selecting templates.
+"""
 from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from collections.abc import Sequence
@@ -34,6 +39,7 @@ _logger = getLogger(__name__)
 
 
 class TemplateData(BaseModel):
+    """``TemplateData`` model."""
     name: str
     img: str | None
     card_layouts: list[LayoutCategory]
@@ -46,14 +52,17 @@ class TemplateData(BaseModel):
 
     @cached_property
     def assembled_template(self) -> AssembledTemplate:
+        """Assembled template."""
         raise ValueError("Assembled template is not set")
 
     @cached_property
     def full_name(self) -> str:
+        """Display name combining set and collector info."""
         return self.name + (f" ({self.plugin})" if self.plugin else "")
 
 
 class TemplateListModel(PydanticQListModel[TemplateData]):
+    """QML model for selecting templates."""
     item_model = TemplateData
 
     def __init__(
@@ -152,6 +161,7 @@ class TemplateListModel(PydanticQListModel[TemplateData]):
         return template_datas
 
     async def render_files(self, paths: list[Path]) -> None:
+        """Render files."""
         if paths:
             _logger.info(
                 f"Queueing {
@@ -170,6 +180,7 @@ class TemplateListModel(PydanticQListModel[TemplateData]):
             def add_render(
                 input: CardDetails | tuple[CardDetails, ScryfallCard],
             ) -> None:
+                """Add render."""
                 if render_operations := prepare_render_operations(
                     template,
                     self._template_library,
@@ -180,14 +191,17 @@ class TemplateListModel(PydanticQListModel[TemplateData]):
                     self._render_queue.enqueue(render_operations[0])
 
             async def add_renders(cards: Sequence[tuple[CardDetails, ScryfallCard]]):
+                """Add renders."""
                 await gather(*[to_thread(add_render, card) for card in cards])
 
             await get_cards_from_inputs(paths, add_renders, self._app_config)
 
     @Slot()
     def render_selections(self) -> None:
+        """Render selections."""
         async def action():
             # Choose images
+            """Open the file picker and queue the selected files."""
             selections = await self._file_dialog_model.select_images(
                 dialog_id="template_list_render",
                 filters=[
@@ -202,6 +216,7 @@ class TemplateListModel(PydanticQListModel[TemplateData]):
 
     @Slot("QVariantList")
     def render_targets(self, urls: list[QUrl]) -> None:
+        """Render targets."""
         paths: list[Path] | None = None
         try:
             paths = [Path(url2pathname(url.path())) for url in urls]
@@ -217,7 +232,9 @@ class TemplateListModel(PydanticQListModel[TemplateData]):
     def test_render(
         self, layout: str | None = None, quick: bool = False, case: str | None = None
     ) -> None:
+        """Queue the selected test renders."""
         async def action() -> None:
+            """Resolve the chosen layout and queue its test render."""
             layout_category = LayoutCategory(layout) if layout else None
 
             selected_template_entry = self.items[self._selected_index]
@@ -246,18 +263,21 @@ class TemplateListModel(PydanticQListModel[TemplateData]):
 
     @Slot(result=str)
     def selected_template_name(self) -> str:
+        """Selected template name."""
         if self._selected_index > -1:
             return self.items[self._selected_index].full_name
         return ""
 
     @Slot(str)
     def select_template(self, name: str) -> None:
+        """Select template."""
         for idx, item in enumerate(self.items):
             if item.full_name == name:
                 self.selected_index = idx  # pyright: ignore[reportAttributeAccessIssue]
 
     @Slot(int)
     def clear_settings(self, idx: int) -> None:
+        """Clear settings."""
         item = self.items[idx]
         for named_template in item.assembled_template.templates:
             for template_details in named_template.template_classes.values():

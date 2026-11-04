@@ -1,3 +1,8 @@
+"""
+* Scripts: Build
+
+CLI for building releases and documentation.
+"""
 from typing import Annotated
 
 from pydantic import BaseModel, Field
@@ -35,6 +40,7 @@ class BuildApp(BaseModel):
     ] = False
 
     def cli_cmd(self) -> None:
+        """Run this CLI subcommand."""
         build_release(
             version=self.version,
             beta=self.beta,
@@ -44,7 +50,9 @@ class BuildApp(BaseModel):
 
 
 class BuildDocs(BaseModel):
+    """``BuildDocs`` model."""
     def cli_cmd(self) -> None:
+        """Run this CLI subcommand."""
         headers = ["Template Classes", "Photoshop Helpers", "App Utilities"]
         paths = ["templates", "helpers", "utils"]
         [generate_mkdocs(p) for p in paths]
@@ -53,6 +61,7 @@ class BuildDocs(BaseModel):
 
 
 class BuildCli(CliApp):
+    """CLI entry point for building releases and docs."""
     app: CliSubCommand[BuildApp]
     docs: CliSubCommand[BuildDocs]
 

@@ -27,6 +27,7 @@ class RulesTextLine:
 
     @cached_property
     def lower(self) -> str:
+        """Return the lowercase form of the value."""
         return self._line.lower()
 
 

@@ -1,3 +1,8 @@
+"""
+* Utils: UXP Base
+
+Bridge to evaluate Photoshop UXP/JSX scripts.
+"""
 from __future__ import annotations
 from functools import cached_property
 from json import dumps
@@ -12,6 +17,7 @@ from src._state import PATH
 
 
 def replace_last(string: str, old: str, new: str) -> str:
+    """Replace the last occurrence of ``old`` in ``string``."""
     old_idx = string.rfind(old)
     if old_idx > -1:
         return string[:old_idx] + new + string[old_idx + len(old) :]
@@ -19,6 +25,7 @@ def replace_last(string: str, old: str, new: str) -> str:
 
 
 def open_in_photoshop(path: Path | str):
+    """Open in photoshop."""
     desc = ActionDescriptor()
     desc.putPath(APP.instance.cID("null"), str(path))
     APP.instance.executeAction(
@@ -29,17 +36,21 @@ def open_in_photoshop(path: Path | str):
 class _UXPAccess:
     @cached_property
     def path_temp_script(self) -> Path:
+        """Path temp script."""
         return PATH.TMP / "_temp.psjs"
 
     @cached_property
     def path_temp_script_absolute(self) -> str:
+        """Path temp script absolute."""
         return str(self.path_temp_script.resolve()).replace("\\", "/")
 
     def read_script(self, name: str) -> str:
+        """Read a bundled UXP script file."""
         with open(PATH.JS_SCRIPTS / name, "r", encoding="utf-8") as f:
             return f.read()
 
     def construct_script(self, script: str, data: Any) -> None:
+        """Build a UXP script with the given placeholders."""
         script_str = script.replace(
             "data = []", f"data = {dumps(data, ensure_ascii=False)}"
         )

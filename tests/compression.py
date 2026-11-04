@@ -1,3 +1,8 @@
+"""
+* Tests: Compression
+
+Compression test helpers.
+"""
 from __future__ import annotations
 from logging import getLogger
 from pathlib import Path
@@ -13,6 +18,7 @@ _logger = getLogger(__name__)
 
 
 class CompressionTestResult(TypedDict):
+    """Fields for ``CompressionTestResult``."""
     time: float
     size: float
 

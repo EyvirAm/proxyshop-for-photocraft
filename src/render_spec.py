@@ -38,22 +38,26 @@ EnsuredStr = Annotated[str, BeforeValidator(_ensure_str)]
 
 
 class ConfigModel(BaseModel):
+    """``ConfigModel`` model."""
     name: str
     settings: EnsuredList[str]
 
 
 class FileModel(BaseModel):
+    """``FileModel`` model."""
     file: str
     settings: EnsuredList[str] = []
 
 
 class GroupModel(BaseModel):
+    """``GroupModel`` model."""
     files: EnsuredList[FileModel | str]
     groups: EnsuredList[GroupModel] = []
     settings: EnsuredList[str] = []
 
 
 class RenderSpecModel(BaseModel):
+    """``RenderSpecModel`` model."""
     files: EnsuredList[FileModel | str] = []
     groups: EnsuredList[GroupModel] = []
     configs: dict[str, EnsuredStr] = {}
@@ -65,6 +69,7 @@ class RenderSpecModel(BaseModel):
 
 @dataclass
 class CardSpec:
+    """Parsed card entry from a render specification file."""
     spec: str
     actual_path: Path | None
 
@@ -85,6 +90,7 @@ class RenderSpec:
 
 
 def parse_render_spec_file(render_spec_path: Path) -> RenderSpecModel:
+    """Parse render spec file."""
     return parse_model(render_spec_path, RootModel[RenderSpecModel]).root
 
 
@@ -106,6 +112,7 @@ def parse_render_spec(render_spec_path: Path) -> RenderSpec:
     cards: list[CardDetails] = []
 
     def resolve_file(file: str) -> list[CardSpec]:
+        """Resolve file."""
         if "*" in file:
             specs = glob.glob(file, root_dir=parent_dir, recursive=True)
             return [
@@ -121,6 +128,7 @@ def parse_render_spec(render_spec_path: Path) -> RenderSpec:
                 return [CardSpec(file, None)]
 
     def append_card(card_spec: CardSpec):
+        """Append card."""
         spec = card_spec.spec
 
         # Make sure the extension doesn't contain a ']' as that implies
@@ -144,6 +152,7 @@ def parse_render_spec(render_spec_path: Path) -> RenderSpec:
         cards.append(card_info)
 
     def append_configs(card: CardSpec, card_configs: list[str]) -> CardSpec:
+        """Append configs."""
         resolved_configs = [render_spec_data.configs.get(c, c) for c in card_configs]
         config = " ".join(resolved_configs)
         return CardSpec(
@@ -152,6 +161,7 @@ def parse_render_spec(render_spec_path: Path) -> RenderSpec:
         )
 
     def parse_group(group: GroupModel, root_group: bool = True) -> list[CardSpec]:
+        """Parse group."""
         group_cards: list[CardSpec] = []
         group_settings = group.settings
 
@@ -173,6 +183,7 @@ def parse_render_spec(render_spec_path: Path) -> RenderSpec:
                 group_cards.append(card_spec)
 
         def expand_variable(card: CardSpec, variable: str, value: str | int):
+            """Expand variable."""
             return CardSpec(
                 card.spec.replace(variable, str(value)),
                 card.actual_path,

@@ -114,6 +114,7 @@ SetType = Literal[
 
 
 class ScryfallImageUris(BaseModel):
+    """``ScryfallImageUris`` model."""
     png: HttpUrl
     border_crop: HttpUrl
     art_crop: HttpUrl
@@ -123,6 +124,7 @@ class ScryfallImageUris(BaseModel):
 
 
 class ScryfallPrices(BaseModel):
+    """``ScryfallPrices`` model."""
     usd: str | None = None
     usd_foil: str | None = None
     usd_etched: str | None = None
@@ -133,12 +135,14 @@ class ScryfallPrices(BaseModel):
 
 
 class ScryfallPurchaseUris(BaseModel):
+    """``ScryfallPurchaseUris`` model."""
     tcgplayer: HttpUrl
     cardmarket: HttpUrl
     cardhoarder: HttpUrl
 
 
 class ScryfallRelatedCard(BaseModel):
+    """``ScryfallRelatedCard`` model."""
     id: UUID
     object: Literal["related_card"]
     component: Literal["token", "meld_part", "meld_result", "combo_piece"]
@@ -148,12 +152,14 @@ class ScryfallRelatedCard(BaseModel):
 
 
 class ScryfallPreview(BaseModel):
+    """``ScryfallPreview`` model."""
     previewed_at: date | None = None
     source_uri: HttpUrl | Literal[""] | None = None
     source: str | None = None
 
 
 class ScryfallCardFace(BaseModel):
+    """``ScryfallCardFace`` model."""
     artist: str | None = None
     artist_id: UUID | None = None
     cmc: float | None = None
@@ -181,6 +187,7 @@ class ScryfallCardFace(BaseModel):
 
 class ScryfallCard(BaseModel):
     # Core Card Fields
+    """``ScryfallCard`` model."""
     arena_id: int | None = None
     id: UUID
     lang: str
@@ -295,6 +302,7 @@ class ScryfallCard(BaseModel):
 
 
 class ScryfallList[T](BaseModel):
+    """``ScryfallList`` model."""
     object: Literal["list"]
     data: list[T]
     has_more: bool = False
@@ -304,10 +312,12 @@ class ScryfallList[T](BaseModel):
 
 
 class ScryfallCardList(ScryfallList[ScryfallCard]):
+    """Scryfall list of full card objects."""
     pass
 
 
 class ScryfallSet(BaseModel):
+    """``ScryfallSet`` model."""
     object: Literal["set"]
     id: UUID
     code: str
@@ -401,6 +411,7 @@ _scryfall_http_header = DEFAULT_HEADERS
 
 
 class ScryfallExceptionKwargs(TypedDict):
+    """Fields of ``ScryfallExceptionKwargs``."""
     exception: NotRequired[Exception | None]
     card_name: NotRequired[str | None]
     card_set: NotRequired[str | None]
@@ -484,6 +495,7 @@ def scryfall_request_wrapper[**P, T]() -> Callable[[Callable[P, T]], Callable[P,
     def decorator(func: Callable[P, T]):
         @rate_limit(limiter=_scryfall_rate_limit, limit=_rate_limit)
         def wrapper(*args: P.args, **kwargs: P.kwargs):
+            """Wrapper."""
             return func(*args, **kwargs)
 
         return wrapper
@@ -531,6 +543,7 @@ def _get_scryfall_exception(
 
 @scryfall_request_wrapper()
 def get_card_via_url(url: str) -> ScryfallCard:
+    """Return the card via url."""
     res = requests.get(url=url, headers=_scryfall_http_header)
 
     try:
@@ -768,6 +781,7 @@ def get_cards_oracle(
 
 
 class CardIdentifierBase(TypedDict):
+    """Fields of ``CardIdentifierBase``."""
     id: NotRequired[str | UUID]
     mtgo_id: NotRequired[int]
     multiverse_id: NotRequired[int]
@@ -776,15 +790,18 @@ class CardIdentifierBase(TypedDict):
 
 
 class CardIdentifierWithName(CardIdentifierBase):
+    """Card identifier using only a name."""
     name: NotRequired[str]
 
 
 class CardIdentifierWithNameAndSet(CardIdentifierBase):
+    """Card identifier using a name and set code."""
     name: str
     set: str
 
 
 class CardIdentifierWithCollectorNumber(CardIdentifierBase):
+    """Card identifier using a set and collector number."""
     collector_number: str
     set: str
 
@@ -797,6 +814,7 @@ CardIdentifier = (
 
 
 class ScryfallCollectionList(ScryfallList[ScryfallCard]):
+    """Scryfall collection response."""
     not_found: list[CardIdentifier] = []
 
 

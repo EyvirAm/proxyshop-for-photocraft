@@ -76,10 +76,12 @@ class PlaneswalkerMod(FullartMod, StarterTemplate):
 
     @cached_property
     def ability_text_spacing(self) -> float | int:
+        """Vertical spacing between ability blocks, in unscaled pixels."""
         return 64
 
     @cached_property
     def ability_text_scaling_step_sizes(self) -> Sequence[float] | None:
+        """Custom font-size steps used when scaling abilities, or None for defaults."""
         return None
 
     """
@@ -104,26 +106,32 @@ class PlaneswalkerMod(FullartMod, StarterTemplate):
 
     @property
     def ability_layers(self) -> list[ArtLayer]:
+        """Duplicated text layers, one per planeswalker ability."""
         return self._ability_layers
 
     @ability_layers.setter
     def ability_layers(self, value: list[ArtLayer]):
+        """Set replace the cached ability text layers."""
         self._ability_layers = value
 
     @property
     def colons(self) -> list[ArtLayer | LayerSet | None]:
+        """Colon separator layers aligned to each ability."""
         return self._colons
 
     @colons.setter
     def colons(self, value: list[ArtLayer | LayerSet | None]):
+        """Set replace the cached colon layers."""
         self._colons = value
 
     @property
     def icons(self) -> list[ArtLayer | LayerSet | None]:
+        """Loyalty icon layers aligned to each ability."""
         return self._icons
 
     @icons.setter
     def icons(self, value: list[ArtLayer | LayerSet | None]):
+        """Set replace the cached icon layers."""
         self._icons = value
 
     """
@@ -173,24 +181,28 @@ class PlaneswalkerMod(FullartMod, StarterTemplate):
 
     @cached_property
     def twins_layer(self) -> ArtLayer | None:
+        """Twins texture layer for this color identity."""
         return psd.getLayer(
             self.twins, psd.getLayerSet(LAYERS.TWINS, self.planeswalker_group)
         )
 
     @cached_property
     def pinlines_layer(self) -> ArtLayer | None:
+        """Pinlines texture layer for this color identity."""
         return psd.getLayer(
             self.pinlines, psd.getLayerSet(LAYERS.PINLINES, self.planeswalker_group)
         )
 
     @cached_property
     def background_layer(self) -> ArtLayer | None:
+        """Background texture layer for this color identity."""
         return psd.getLayer(
             self.background, psd.getLayerSet(LAYERS.BACKGROUND, self.planeswalker_group)
         )
 
     @cached_property
     def color_indicator_layer(self) -> ArtLayer | None:
+        """Color indicator layer, shown for type-shifted cards."""
         return psd.getLayer(
             self.pinlines, [self.planeswalker_group, LAYERS.COLOR_INDICATOR]
         )
@@ -201,18 +213,22 @@ class PlaneswalkerMod(FullartMod, StarterTemplate):
 
     @cached_property
     def text_layer_loyalty(self) -> ArtLayer | None:
+        """Starting loyalty text layer."""
         return psd.getLayer(LAYERS.TEXT, [self.loyalty_group, LAYERS.STARTING_LOYALTY])
 
     @cached_property
     def text_layer_ability(self) -> ArtLayer | None:
+        """Activated ability text template."""
         return psd.getLayer(LAYERS.ABILITY_TEXT, self.loyalty_group)
 
     @cached_property
     def text_layer_static(self) -> ArtLayer | None:
+        """Static ability text template."""
         return psd.getLayer(LAYERS.STATIC_TEXT, self.loyalty_group)
 
     @cached_property
     def text_layer_colon(self) -> ArtLayer | None:
+        """Colon separator template for activated abilities."""
         return psd.getLayer(LAYERS.COLON, self.loyalty_group)
 
     """
@@ -234,6 +250,7 @@ class PlaneswalkerMod(FullartMod, StarterTemplate):
     """
 
     def enable_frame_layers(self):
+        """Enable twins, pinlines, background and color indicator layers."""
         # Twins
         if self.twins_layer:
             self.twins_layer.visible = True

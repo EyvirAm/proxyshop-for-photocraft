@@ -276,6 +276,7 @@ def enter_rgb_channel(layer: ArtLayer | LayerSet | None = None):
 
 
 class MaskSelectionBehaviour(StrEnum):
+    """``MaskSelectionBehaviour`` options."""
     REVEAL_ALL = "revealAll"
     REVEAL_SELECTION = "revealSelection"
     HIDE_SELECTION = "hideSelection"

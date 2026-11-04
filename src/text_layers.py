@@ -63,6 +63,8 @@ _logger = getLogger(__name__)
 
 
 class TextFieldKwargs(TypedDict):
+    """Optional keyword arguments accepted by :class:`TextField` and subclasses."""
+
     color: NotRequired[SolidColor | None]
     font: NotRequired[str | None]
     font_mana: NotRequired[str | None]
@@ -90,6 +92,8 @@ class TextFieldKwargs(TypedDict):
 
 
 class TextField:
+    """Set a text layer's contents and color, with optional fonts and scaling."""
+
     def __init__(
         self, layer: ArtLayer, contents: str = "", **kwargs: Unpack[TextFieldKwargs]
     ):
@@ -153,6 +157,7 @@ class TextField:
             symbol_map = {}
 
             def get_default_color() -> SolidColor:
+                """Fallback to the text item's color, or black if it can't be read."""
                 # For some reason fetching color from a seemingly valid TextItem can fail.
                 # The error goes away if the color is changed via Photoshop's GUI.
                 try:
@@ -267,6 +272,7 @@ class TextField:
             ):
 
                 def replacer(match: Match[str], replacem: str = replacement) -> str:
+                    """Replace the matched word ending with its Beleren glyph."""
                     after_char = match.group(1)
                     return replacem + after_char if isinstance(after_char, str) else ""
 
@@ -294,17 +300,21 @@ class ScaledTextField(TextField):
 
     @cached_property
     def step_sizes(self) -> Sequence[float]:
+        """Font-size decrements tried while shrinking the text."""
         return (0.4, 0.2)
 
     @cached_property
     def gap(self) -> float:
+        """Pixels kept between the text and the reference layer."""
         return 30
 
     @cached_property
     def reference_side(self) -> RefSide:
+        """Side of the reference layer used to detect overlap."""
         return RefSide.LEFT
 
     def execute(self):
+        """Insert the text and shrink it until it clears the reference."""
         super().execute()
 
         # Scale down the text layer until it doesn't overlap with a reference layer
@@ -323,6 +333,7 @@ class ScaledTextFieldLeft(TextField):
     no longer overlaps with the `reference` layer's right bound."""
 
     def execute(self):
+        """Insert the text and shrink it until its left edge clears the reference."""
         super().execute()
 
         # Scale down the text layer until it doesn't overlap with a reference layer
@@ -341,6 +352,7 @@ class ScaledWidthTextField(TextField):
             return get_layer_width(self.reference)
 
     def execute(self):
+        """Insert the text and shrink it to the reference layer's width."""
         super().execute()
 
         # Scale down the text layer until it doesn't overlap with a reference layer
@@ -349,6 +361,8 @@ class ScaledWidthTextField(TextField):
 
 
 class TextDetails(TypedDict):
+    """Cached formatting data derived from the raw text contents."""
+
     rules_text: str
     input_string: str
     symbol_indices: list[CardSymbolString]
@@ -377,6 +391,7 @@ class FormattedTextField(TextField):
 
     @cached_property
     def text_details(self) -> TextDetails:
+        """Parse symbols/italics and build the final input string."""
         # Generate italic text arrays from things in (parentheses), ability words, and the given flavor text
         italic_text = generate_italics(self.contents) if self.contents else []
 
@@ -422,18 +437,22 @@ class FormattedTextField(TextField):
 
     @cached_property
     def italics_indices(self) -> list[CardItalicString]:
+        """Character ranges that must use the italic font."""
         return self.text_details["italics_indices"]
 
     @cached_property
     def symbol_indices(self) -> list[CardSymbolString]:
+        """Character positions and colors for each mana symbol."""
         return self.text_details["symbol_indices"]
 
     @cached_property
     def input(self) -> str:
+        """Final string inserted into the text layer (rules plus flavor)."""
         return self.text_details["input_string"]
 
     @cached_property
     def divider(self) -> ArtLayer | LayerSet | None:
+        """Optional divider layer separating rules and flavor text."""
         # Default to None unless overridden
         return
 
@@ -443,22 +462,26 @@ class FormattedTextField(TextField):
 
     @cached_property
     def rules_text(self) -> str:
+        """Rules text with every recognized mana symbol replaced."""
         return self.text_details["rules_text"]
 
     @cached_property
     def rules_range(self) -> tuple[int, int] | None:
+        """Character range of the rules text within ``input``."""
         if not self.rules_text:
             return
         return 0, len(self.rules_text)
 
     @cached_property
     def rules_start(self) -> int:
+        """Start index of the rules text, or -1 when there is none."""
         if self.rules_range:
             return self.rules_range[0]
         return -1
 
     @cached_property
     def rules_end(self) -> int:
+        """End index of the rules text, or -1 when there is none."""
         if self.rules_range:
             return self.rules_range[1]
         return -1
@@ -469,12 +492,14 @@ class FormattedTextField(TextField):
 
     @cached_property
     def flavor_text(self) -> str:
+        """Flavor text provided in the keyword arguments."""
         if flavor := self.kwargs.get("flavor", ""):
             return flavor.replace("\n", "\r")
         return ""
 
     @cached_property
     def flavor_text_range(self) -> tuple[int, int] | None:
+        """Character range of the flavor text within ``input``."""
         if not self.flavor_text:
             return
         total = len(self.input)
@@ -482,18 +507,21 @@ class FormattedTextField(TextField):
 
     @cached_property
     def flavor_start(self) -> int:
+        """Start index of the flavor text, or -1 when there is none."""
         if self.flavor_text_range:
             return self.flavor_text_range[0]
         return -1
 
     @cached_property
     def flavor_end(self) -> int:
+        """End index of the flavor text, or -1 when there is none."""
         if self.flavor_text_range:
             return self.flavor_text_range[1]
         return -1
 
     @cached_property
     def quote_index(self) -> int:
+        """Index of the line break before an attributed quote, or -1."""
         if self.flavor_text_range:
             return self.input.find("\r", self.flavor_start + 3)
         return -1
@@ -552,26 +580,32 @@ class FormattedTextField(TextField):
 
     @cached_property
     def contents_centered(self) -> bool:
+        """Whether the text block should be centered."""
         return self.kwargs.get("centered", False)
 
     @cached_property
     def flavor_centered(self) -> bool:
+        """Whether flavor text should be centered (defaults to ``contents_centered``)."""
         return self.kwargs.get("flavor_centered", self.contents_centered)
 
     @cached_property
     def vertically_centered(self) -> bool:
+        """Whether the block should be centered within its reference area."""
         return self.kwargs.get("vertically_centered", True)
 
     @cached_property
     def bold_rules_text(self) -> bool:
+        """Whether the rules text should use the bold font."""
         return self.kwargs.get("bold_rules_text", False)
 
     @cached_property
     def right_align_quote(self) -> bool:
+        """Whether an attributed quote should be right-aligned."""
         return self.kwargs.get("right_align_quote", False)
 
     @cached_property
     def font_size(self) -> float:
+        """Font size in points, scaled for the active document."""
         if font_size := self.kwargs.get("font_size"):
             return font_size * get_text_scale_factor(self.layer)
         return self.TI.size * get_text_scale_factor(self.layer)
@@ -582,14 +616,17 @@ class FormattedTextField(TextField):
 
     @cached_property
     def is_flavor_text(self) -> bool:
+        """Whether the contents include flavor text."""
         return bool(self.flavor_start >= 0)
 
     @cached_property
     def is_quote_text(self) -> bool:
+        """Whether the flavor text is an attributed quote."""
         return bool(self.quote_index >= 0)
 
     @cached_property
     def is_modal(self) -> bool:
+        """Whether the text contains modal bullet points."""
         return bool("\u2022" in self.input)
 
     """
@@ -770,6 +807,7 @@ class FormattedTextField(TextField):
         )
 
     def execute(self):
+        """Format the text, justify it and disable hyphenation."""
         super().execute()
 
         # No need to format if there's no content
@@ -815,6 +853,7 @@ class FormattedTextArea(FormattedTextField):
 
     @cached_property
     def pt_reference(self) -> ReferenceLayer | None:
+        """Optional power/toughness indicator the text must stay clear of."""
         return self.kwargs.get("pt_reference", None)
 
     @cached_property
@@ -933,6 +972,7 @@ class FormattedTextArea(FormattedTextField):
                 )
 
     def execute(self):
+        """Pre-scale, format, scale to fit, position and add the divider."""
         font_size = None
 
         # Pre-scaling to prevent text overflow errors

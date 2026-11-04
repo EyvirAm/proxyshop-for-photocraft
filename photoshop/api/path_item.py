@@ -17,19 +17,25 @@ class PathItem(Photoshop):
         self.subPathItems: list[Any] = []
 
     def select(self) -> None:
+        """No-op: path selection is not implemented."""
         pass
 
     def deselect(self) -> None:
+        """No-op: path deselection is not implemented."""
         pass
 
     def remove(self) -> None:
+        """No-op: path removal is not implemented."""
         pass
 
     def strokePath(self, *args: Any, **kwargs: Any) -> None:
+        """No-op: stroking paths is not implemented."""
         pass
 
     def fillPath(self, *args: Any, **kwargs: Any) -> None:
+        """No-op: filling paths is not implemented."""
         pass
 
     def makeSelection(self, *args: Any, **kwargs: Any) -> None:
+        """No-op: converting paths to selections is not implemented."""
         pass

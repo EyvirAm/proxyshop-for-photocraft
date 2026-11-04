@@ -166,6 +166,7 @@ class BattleTemplate(BattleMod, VectorTemplate):
 
     @cached_property
     def is_legendary(self) -> bool:
+        """Battle cards never use the legendary crown."""
         return False
 
     """
@@ -174,6 +175,7 @@ class BattleTemplate(BattleMod, VectorTemplate):
 
     @cached_property
     def background_group(self) -> LayerSet | None:
+        """Battles have no separate background group."""
         return
 
     """
@@ -199,10 +201,12 @@ class BattleTemplate(BattleMod, VectorTemplate):
 
     @cached_property
     def textbox_shape(self) -> ArtLayer | None:
+        """Textbox shape for the normal battle layout."""
         return psd.getLayer(LAYERS.NORMAL, [self.textbox_group, LAYERS.SHAPE])
 
     @cached_property
     def enabled_shapes(self) -> list[ArtLayer | LayerSet | None]:
+        """Shapes enabled for the battle frame."""
         return [self.textbox_shape]
 
 
@@ -215,6 +219,7 @@ class UniversesBeyondBattleTemplate(BattleTemplate):
 
     @cached_property
     def pinlines_color_map(self) -> dict[str, ColorObject]:
+        """Color overrides for Universes Beyond battle pinlines."""
         return {
             **pinlines_color_map,
             "W": (246, 247, 241),
@@ -230,6 +235,7 @@ class UniversesBeyondBattleTemplate(BattleTemplate):
 
     @cached_property
     def twins_colors(self) -> str:
+        """Use the 'Beyond' twins texture variant."""
         return f"{self.twins} Beyond"
 
     """
@@ -247,4 +253,5 @@ class UniversesBeyondBattleTemplate(BattleTemplate):
 
     @cached_property
     def textbox_shape(self) -> ArtLayer | None:
+        """Textbox shape for the Universes Beyond battle layout."""
         return psd.getLayer(LAYERS.NORMAL, [self.textbox_group, LAYERS.SHAPE])

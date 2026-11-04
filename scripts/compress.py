@@ -1,3 +1,8 @@
+"""
+* Scripts: Compress
+
+CLI for compressing template and plugin assets.
+"""
 from pathlib import Path
 from typing import Annotated
 
@@ -23,6 +28,7 @@ class CompressTemplate(BaseModel):
     ] = None
 
     def cli_cmd(self) -> None:
+        """Run this CLI subcommand."""
         path = (
             Path(PATH.PLUGINS, self.plugin, "templates")
             if self.plugin
@@ -46,6 +52,7 @@ class CompressPlugin(BaseModel):
     ]
 
     def cli_cmd(self) -> None:
+        """Run this CLI subcommand."""
         path = PATH.PLUGINS / self.plugin / "templates"
         if not path.is_dir():
             print(f"Couldn't find a plugin named '{self.plugin}'")
@@ -66,6 +73,7 @@ class CompressAll(BaseModel):
 
     def cli_cmd(self) -> None:
         # Compress main templates folder
+        """Run this CLI subcommand."""
         compress_7z_all(PATH.TEMPLATES)
 
         # Compress plugins if requested
@@ -78,6 +86,7 @@ class CompressAll(BaseModel):
 
 
 class CompressCli(BaseModel):
+    """``CompressCli`` model."""
     template: CliSubCommand[CompressTemplate]
     plugin: CliSubCommand[CompressPlugin]
     all: CliSubCommand[CompressAll]

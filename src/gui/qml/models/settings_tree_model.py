@@ -1,3 +1,8 @@
+"""
+* GUI: Settings Tree Model
+
+QML tree model for grouped settings.
+"""
 from __future__ import annotations
 from collections.abc import Iterable
 from logging import getLogger
@@ -14,6 +19,7 @@ _logger = getLogger(__name__)
 
 
 class SettingSectionItem(BaseModel):
+    """``SettingSectionItem`` model."""
     id: str
     name: str
     config: ConfigHandler | None = None
@@ -23,6 +29,7 @@ class SettingSectionItem(BaseModel):
 
 
 class SettingsTreeModel(PydanticQItemModel[SettingSectionItem]):
+    """QML tree model for grouped settings."""
     item_model = SettingSectionItem
 
     def __init__(
@@ -151,16 +158,19 @@ class SettingsTreeModel(PydanticQItemModel[SettingSectionItem]):
 
     @Property(str, notify=_selected_title_changed)
     def selected_title(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Currently selected settings section title."""
         return self._selected_title
 
     @selected_title.setter
     def selected_title(self, value: str) -> None:
+        """Set currently selected settings section title."""
         if value != self._selected_title:
             self._selected_title = value
             self._selected_title_changed.emit()
 
     @property
     def selected_section(self) -> ConfigHandler | None:
+        """Currently selected settings section key."""
         idx = self._selected_model_index
         if idx.isValid():
             item: TreeItem[SettingSectionItem] = idx.internalPointer()
@@ -175,6 +185,7 @@ class SettingsTreeModel(PydanticQItemModel[SettingSectionItem]):
         class_name: str | None = None,
         plugin: str | None = None,
     ) -> None:
+        """Select settings section."""
         if not template_name:
             self.selected_model_index = self.index_of_item(self._app_leaf)  # pyright: ignore[reportAttributeAccessIssue]
             return
@@ -217,6 +228,7 @@ class SettingsTreeModel(PydanticQItemModel[SettingSectionItem]):
 
     @Slot()
     def save_configs(self) -> None:
+        """Save configs."""
         self._app_config.app_config.save()
         self._app_config.base_config.save()
         self._save_all_template_configs()
@@ -252,6 +264,7 @@ class SettingsTreeModel(PydanticQItemModel[SettingSectionItem]):
         def recurse(
             item: TreeItem[SettingSectionItem],
         ) -> TreeItem[SettingSectionItem] | None:
+            """Recursively populate the settings tree."""
             if item.data.config and config.id == item.data.config.id:
                 return item
             for child in item.children:

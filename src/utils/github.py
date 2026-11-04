@@ -1,3 +1,8 @@
+"""
+* Utils: GitHub
+
+GitHub API models and helpers with retry support.
+"""
 from __future__ import annotations
 from base64 import b64decode
 from collections.abc import Callable
@@ -42,18 +47,22 @@ GITHUB_API_REPOSITORY_CONTENT_URL = GITHUB_API_BASE_URL + "repos/{repo}/contents
 
 
 class GitHubRepo(BaseModel):
+    """``GitHubRepo`` model."""
     default_branch: str
 
 
 class GitHubCommit(BaseModel):
+    """``GitHubCommit`` model."""
     sha: str
 
 
 class GitHubBranch(BaseModel):
+    """``GitHubBranch`` model."""
     commit: GitHubCommit
 
 
 class GitHubReleaseAsset(BaseModel):
+    """``GitHubReleaseAsset`` model."""
     id: int
     name: str
     content_type: str
@@ -66,6 +75,7 @@ class GitHubReleaseAsset(BaseModel):
 
 
 class GitHubRelease(BaseModel):
+    """``GitHubRelease`` model."""
     id: int
     tag_name: str
     name: str
@@ -81,15 +91,18 @@ GitHubReleases = RootModel[list[GitHubRelease]]
 
 
 class GitHubRepoContent(BaseModel):
+    """``GitHubRepoContent`` model."""
     encoding: Literal["base64"]
     content: str
 
 
 def github_request_wrapper[T, **P](func: Callable[P, T]) -> Callable[P, T]:
+    """Wrap a GitHub request with logging, rate limiting and retries."""
     @log_on_exception(logger=_logger)
     @rate_limit(limiter=_rate_limiter, limit=_rate_limit)
     @on_exception(expo, RequestException, logger=None, max_tries=1, max_time=1)
     def wrapper(*args: P.args, **kwargs: P.kwargs):
+        """Wrapper."""
         return func(*args, **kwargs)
 
     return wrapper
@@ -97,6 +110,7 @@ def github_request_wrapper[T, **P](func: Callable[P, T]) -> Callable[P, T]:
 
 @github_request_wrapper
 def get_github_repo(repository: str) -> GitHubRepo:
+    """Return the github repo."""
     response = get(
         GITHUB_API_REPO_URL.format(repo=repository),
         headers=_headers,
@@ -109,6 +123,7 @@ def get_github_repo(repository: str) -> GitHubRepo:
 
 @github_request_wrapper
 def get_github_branch(repository: str, branch: str) -> GitHubBranch:
+    """Return the github branch."""
     response = get(
         GITHUB_API_BRANCH_URL.format(repo=repository, branch=branch),
         headers=_headers,
@@ -122,6 +137,7 @@ def get_github_branch(repository: str, branch: str) -> GitHubBranch:
 def get_latest_github_repo_commit_hash(
     repository: str, branch: str | None = None
 ) -> str:
+    """Return the latest github repo commit hash."""
     if not branch:
         branch = get_github_repo(repository).default_branch
 
@@ -136,6 +152,7 @@ _default_releases: list[GitHubRelease] = []
 def get_github_releases(
     repository: str, per_page: int = 5, page: int = 1
 ) -> list[GitHubRelease]:
+    """Return the github releases."""
     response = get(
         GITHUB_API_RELEASES_URL.format(repo=repository, per_page=per_page, page=page),
         headers=_headers,
@@ -150,6 +167,7 @@ def get_github_releases(
 def download_github_repository_archive_zip(
     repository: str, path: str | PathLike[str], ref: str = ""
 ) -> None:
+    """Download github repository archive zip."""
     download_file(
         url=GITHUB_API_REPOSITORY_ARCHIVE_ZIP_URL.format(repo=repository, ref=ref),
         path=path,
@@ -159,6 +177,7 @@ def download_github_repository_archive_zip(
 
 @github_request_wrapper
 def get_github_file_contents(repository: str, path: str) -> bytes:
+    """Return the github file contents."""
     response = get(
         GITHUB_API_REPOSITORY_CONTENT_URL.format(repo=repository, path=path),
         headers=_headers,

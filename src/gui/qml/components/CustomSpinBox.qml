@@ -1,3 +1,5 @@
+// Themed numeric spin box.
+
 import QtQuick.Controls
 
 SpinBox {

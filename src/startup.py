@@ -1,3 +1,9 @@
+"""
+* Startup Checks
+
+Runs the one-time checks executed while the GUI starts: PhotoCraft
+connectivity, installed fonts, set data, API keys and update checks.
+"""
 from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from logging import getLogger
@@ -22,6 +28,7 @@ _logger = getLogger(__name__)
 
 
 def photoshop_checks(app: PhotoshopHandler) -> None:
+    """Verify the PhotoCraft connection and the installed fonts."""
     # Check Photoshop connection
     result = app.refresh_app()
     if result:
@@ -91,7 +98,8 @@ def check_app_update(env: AppEnvironment) -> None:
             _logger.exception("Failed to check app updates")
 
 
-def check_plugin_updates(plugin_updater: PluginUpdaterModel):
+def check_plugin_updates(plugin_updater: PluginUpdaterModel) -> None:
+    """Check for plugin updates and log whether any are available."""
     try:
         if plugin_updater.handle_fetch_data():
             _logger.info(
@@ -101,7 +109,8 @@ def check_plugin_updates(plugin_updater: PluginUpdaterModel):
         _logger.exception("Failed to check plugin updates")
 
 
-def check_template_updates(template_updater: TemplateUpdaterModel):
+def check_template_updates(template_updater: TemplateUpdaterModel) -> None:
+    """Check for template updates and log whether any are available."""
     try:
         if async_to_sync(template_updater.handle_fetch_data()):
             _logger.info(
@@ -112,6 +121,7 @@ def check_template_updates(template_updater: TemplateUpdaterModel):
 
 
 def update_set_data(con: AppConstants) -> None:
+    """Refresh the Hexproof set data and reload constants if it changed."""
     # Update set data if needed
     updated, error = update_hexproof_cache()
     if updated:
@@ -122,6 +132,7 @@ def update_set_data(con: AppConstants) -> None:
 
 
 def check_api_keys(env: AppEnvironment) -> None:
+    """Fetch any missing file-hosting API keys and log the result."""
     # Check if API keys are valid
     if not env.API_GOOGLE:
         env.API_GOOGLE = get_api_key("proxyshop.google.drive")
@@ -144,6 +155,7 @@ def run_startup_checks(
     plugin_updater: PluginUpdaterModel,
     template_updater: TemplateUpdaterModel,
 ) -> None:
+    """Initialize PhotoCraft and spawn the startup checks in background threads."""
     photoshop_initializer.initialize()
     if photoshop_initializer.ready:
         photoshop_checks(photoshop_initializer.instance)

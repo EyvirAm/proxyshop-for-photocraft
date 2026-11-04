@@ -82,14 +82,17 @@ class Layer(Photoshop):
 
     @property
     def id(self) -> int:
+        """Numeric layer identifier."""
         return self._id
 
     @property
     def name(self) -> str:
+        """Layer name."""
         return self._name
 
     @name.setter
     def name(self, value: str) -> None:
+        """Rename the layer in PhotoCraft."""
         self._name = str(value)
         self._exec_photocraft(
             "layer.setProps", {"layer": self._id, "name": self._name}
@@ -97,10 +100,12 @@ class Layer(Photoshop):
 
     @property
     def visible(self) -> bool:
+        """Whether the layer is visible."""
         return self._visible
 
     @visible.setter
     def visible(self, value: bool) -> None:
+        """Show or hide the layer in PhotoCraft."""
         self._visible = bool(value)
         self._exec_photocraft(
             "layer.setProps", {"layer": self._id, "visible": self._visible}
@@ -108,10 +113,12 @@ class Layer(Photoshop):
 
     @property
     def opacity(self) -> float:
+        """Layer opacity as a percentage (0-100)."""
         return self._opacity
 
     @opacity.setter
     def opacity(self, value: float) -> None:
+        """Set the layer opacity, clamped to 0-100."""
         self._opacity = float(value)
         self._exec_photocraft(
             "layer.setProps",
@@ -120,33 +127,41 @@ class Layer(Photoshop):
 
     @property
     def blendMode(self) -> BlendMode:
+        """Blend mode used by the layer."""
         return self._blend_mode
 
     @blendMode.setter
     def blendMode(self, value: BlendMode) -> None:
+        """Set the layer blend mode."""
         self._blend_mode = value
 
     @property
     def kind(self) -> LayerKind:
+        """Layer kind (normal, text, adjustment, etc.)."""
         return self._kind
 
     @kind.setter
     def kind(self, value: LayerKind) -> None:
+        """Set the layer kind."""
         self._kind = value
 
     @property
     def bounds(self) -> tuple[float, float, float, float]:
+        """Layer bounds as ``(left, top, right, bottom)``."""
         return self._bounds
 
     @bounds.setter
     def bounds(self, value: tuple[float, float, float, float]) -> None:
+        """Update the cached layer bounds."""
         self._bounds = value
 
     @property
     def boundsNoEffects(self) -> tuple[float, float, float, float]:
+        """Layer bounds ignoring layer effects."""
         return self._bounds
 
     def translate(self, delta_x: float = 0.0, delta_y: float = 0.0) -> None:
+        """Move the layer by the given delta, rounded to whole pixels."""
         dx = int(round(delta_x))
         dy = int(round(delta_y))
         if dx == 0 and dy == 0:
@@ -164,6 +179,7 @@ class Layer(Photoshop):
         vertical: float = 100.0,
         anchor: Any = None,
     ) -> None:
+        """Scale the layer around its center by the given percentages."""
         l, t, r, b = self._bounds
         w = (r - l) * (horizontal / 100.0)
         h = (b - t) * (vertical / 100.0)
@@ -181,6 +197,7 @@ class Layer(Photoshop):
         )
 
     def rotate(self, angle: float, anchor: Any = None) -> None:
+        """Rotate the layer by ``angle`` degrees."""
         self._exec_photocraft(
             "edit.transform",
             {"layer": self._id, "rotate": float(angle)},
@@ -189,6 +206,7 @@ class Layer(Photoshop):
     def move(
         self, relativeObject: Any, insertionLocation: ElementPlacement
     ) -> None:
+        """Move the layer relative to another layer or group."""
         target_id = getattr(relativeObject, "id", None)
         if target_id is None:
             return
@@ -207,15 +225,19 @@ class Layer(Photoshop):
         )
 
     def remove(self) -> None:
+        """Delete the layer from the document."""
         self._exec_photocraft("layer.delete", {"layer": self._id})
         if self.parent is not None and hasattr(self.parent, "_remove_child"):
             self.parent._remove_child(self)
 
     def delete(self) -> None:
+        """Alias of :meth:`remove`."""
         self.remove()
 
     def unlink(self) -> None:
+        """No-op: links are not supported by PhotoCraft."""
         pass
 
     def link(self, with_layer: Any) -> None:
+        """No-op: links are not supported by PhotoCraft."""
         pass

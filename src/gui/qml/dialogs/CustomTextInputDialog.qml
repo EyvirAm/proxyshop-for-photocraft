@@ -1,3 +1,5 @@
+// Prompt dialog for a single line of text.
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls

@@ -65,6 +65,7 @@ def hexproof_request_wrapper[T, **P](
             max_time=4,
         )
         def wrapper(*args: P.args, **kwargs: P.kwargs):
+            """Wrapper."""
             try:
                 return func(*args, **kwargs)
             except Exception:
@@ -96,12 +97,14 @@ def get_api_key(key: str) -> str:
 
 
 async def check_api_keys(env: AppEnvironment) -> bool:
+    """Ensure the API keys needed for updates are available."""
     get_operations: list[Awaitable[None]] = []
 
     # Check if API keys are valid
     if not env.API_GOOGLE:
 
         async def set_google_api_key():
+            """Set the google api key."""
             env.API_GOOGLE = await to_thread(get_api_key, "proxyshop.google.drive")
             if not env.API_GOOGLE:
                 _logger.warning("Couldn't get Google Drive API key")
@@ -110,6 +113,7 @@ async def check_api_keys(env: AppEnvironment) -> bool:
     if not env.API_AMAZON:
 
         async def set_amazon_api_key():
+            """Set the amazon api key."""
             env.API_AMAZON = await to_thread(get_api_key, "proxyshop.amazon.s3")
             if not env.API_AMAZON:
                 _logger.warning("Couldn't get Amazon API key")

@@ -1,3 +1,5 @@
+// Read-only text that can be selected and copied.
+
 import QtQuick
 
 TextEdit {

@@ -1,3 +1,5 @@
+// Shared list/tree item delegate.
+
 import QtQuick
 import QtQuick.Controls
 

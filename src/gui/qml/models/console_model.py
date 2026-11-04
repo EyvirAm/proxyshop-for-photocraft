@@ -1,3 +1,8 @@
+"""
+* GUI: Console Model
+
+QML model exposing application logs to the console view.
+"""
 from __future__ import annotations
 from logging import DEBUG, Formatter, LogRecord, getLogger
 from re import Match, compile
@@ -26,6 +31,7 @@ class _ColorizingFormatter(Formatter):
     _severity_regex = compile(r"(\[[^\[\]]+\])(\[[^\s\[\]]+\])")
 
     def format(self, record: LogRecord) -> str:
+        """Format a log record for display."""
         return "<br>".join(
             self._severity_regex.sub(
                 lambda match: _colorize_severity(
@@ -38,12 +44,14 @@ class _ColorizingFormatter(Formatter):
 
 
 class LogEntry(BaseModel):
+    """``LogEntry`` model."""
     message: str
     severity: int
     color: str
 
 
 class ConsoleModel(PydanticQListModel[LogEntry]):
+    """QML model exposing application logs."""
     item_model = LogEntry
 
     def __init__(
@@ -75,5 +83,6 @@ class ConsoleModel(PydanticQListModel[LogEntry]):
 
     @Slot()
     def copy_log(self) -> None:
+        """Copy log."""
         clipboard = QGuiApplication.clipboard()
         clipboard.setText("\n".join([item.message for item in self.items]))

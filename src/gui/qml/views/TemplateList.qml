@@ -1,3 +1,5 @@
+// Template selection list.
+
 pragma ComponentBehavior: Bound
 import QtQml
 import QtQuick

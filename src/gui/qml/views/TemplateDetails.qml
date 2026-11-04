@@ -1,3 +1,5 @@
+// Details panel for the selected template.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQml

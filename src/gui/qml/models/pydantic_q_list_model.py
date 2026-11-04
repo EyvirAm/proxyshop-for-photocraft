@@ -1,3 +1,8 @@
+"""
+* GUI: Pydantic Qt Models
+
+Generic Qt list/tree models backed by Pydantic models.
+"""
 from __future__ import annotations
 from itertools import chain
 from logging import getLogger
@@ -21,6 +26,7 @@ _logger = getLogger(__name__)
 
 
 class TreeItem[T: BaseModel]:
+    """Node in a tree of Pydantic items."""
     def __init__(self, data: T, parent: TreeItem[T] | None = None) -> None:
         self.children: list[TreeItem[T]] = []
         self.data = data
@@ -29,31 +35,39 @@ class TreeItem[T: BaseModel]:
             parent.append_child(self)
 
     def append_child(self, child: TreeItem[T]) -> None:
+        """Append a child item and set its parent."""
         self.children.append(child)
         child.parent = self
 
     def child(self, row: int) -> TreeItem[T] | None:
+        """Return the child at ``row``, if it exists."""
         return self.children[row] if -1 < row < self.child_count() else None
 
     def child_count(self) -> int:
+        """Number of child items."""
         return len(self.children)
 
     def column_count(self) -> int:
+        """Number of columns exposed to Qt."""
         return 1
 
     def row(self) -> int:
+        """Return this item's row within its parent."""
         return self.parent.children.index(self) if self.parent else -1
 
 
 class PydanticQItemModelBase[T: BaseModel]:
+    """Shared role handling for Pydantic-backed Qt models."""
     item_model: type[T]
     _role_names: dict[int, QByteArray]
     _roles_reverse: dict[str, int]
 
     def roleNames(self) -> dict[int, QByteArray]:
+        """Map role IDs to their QML names."""
         return self._role_names
 
     def get_role(self, property_name: str) -> int:
+        """Return the role ID for a Pydantic field name."""
         return self._roles_reverse[property_name]
 
 
@@ -86,6 +100,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
         self,
         parent: QModelIndex | QPersistentModelIndex = QModelIndex(),  # noqa: B008
     ) -> int:
+        """Row count."""
         if parent.column() > 0:
             return 0
 
@@ -100,6 +115,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
         self,
         parent: QModelIndex | QPersistentModelIndex = QModelIndex(),  # noqa: B008
     ) -> int:
+        """Number of columns exposed to Qt."""
         if parent.isValid():
             parent_item: TreeItem[T] = parent.internalPointer()
             return parent_item.column_count()
@@ -111,6 +127,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
         index: QModelIndex | QPersistentModelIndex,
         role: int = Qt.ItemDataRole.DisplayRole,
     ) -> Any:
+        """Return the data for the given index and role."""
         if not index.isValid() or role not in self._roles:
             return None
         tree_item: TreeItem[T] = index.internalPointer()
@@ -123,6 +140,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
         column: int,
         parent: QModelIndex | QPersistentModelIndex = QModelIndex(),  # noqa: B008
     ) -> QModelIndex:
+        """Return the model index for a row, column and parent."""
         if not self.hasIndex(row, column, parent=parent):
             return QModelIndex()
 
@@ -137,6 +155,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
 
     @override
     def parent(self, index: QModelIndex = QModelIndex()) -> QModelIndex:  # pyright: ignore[reportIncompatibleMethodOverride]  # noqa: B008
+        """Return the parent model index of a child index."""
         if not index.isValid():
             return QModelIndex()
 
@@ -149,6 +168,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
         return QModelIndex()
 
     def index_of_item(self, item: TreeItem[T]) -> QModelIndex:
+        """Index of item."""
         return self.createIndex(item.row(), 0, item)
 
     # region Properties
@@ -157,6 +177,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
 
     @Property(QModelIndex, notify=selected_model_index_changed)
     def selected_model_index(self) -> QModelIndex:  # pyright: ignore[reportRedeclaration]
+        """Selected model index."""
         return self._selected_model_index
 
     def _set_selected_model_index(self, value: QModelIndex) -> None:
@@ -172,6 +193,7 @@ class PydanticQItemModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractItemM
 
     @selected_model_index.setter
     def selected_model_index(self, value: QModelIndex) -> None:
+        """Set the selected model index."""
         self._set_selected_model_index(value)
 
     # endregion Properties
@@ -222,10 +244,12 @@ class PydanticQListModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractListM
 
     @Property(int, notify=_selected_index_changed, final=True)
     def selected_index(self) -> int:  # pyright: ignore[reportRedeclaration]
+        """Selected index."""
         return self._selected_index
 
     @selected_index.setter
     def selected_index(self, value: int) -> None:
+        """Set the selected index."""
         if value != self._selected_index:
             self._selected_index = value
             self._selected_index_changed.emit()
@@ -234,6 +258,7 @@ class PydanticQListModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractListM
 
     @Slot(int, str, result="QVariant")
     def get_data(self, index: int, role_name: str) -> Any:
+        """Return the data."""
         if (
             index < -1
             or index >= len(self.items)
@@ -252,6 +277,7 @@ class PydanticQListModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractListM
         index: QModelIndex | QPersistentModelIndex,
         role: int = Qt.ItemDataRole.DisplayRole,
     ) -> Any:
+        """Return the data for the given index and role."""
         if not index.isValid() or role not in self._roles:
             return
 
@@ -263,4 +289,5 @@ class PydanticQListModel[T: BaseModel](PydanticQItemModelBase[T], QAbstractListM
         self,
         parent: QModelIndex | QPersistentModelIndex = QModelIndex(),  # noqa: B008
     ) -> int:
+        """Row count."""
         return len(self.items)

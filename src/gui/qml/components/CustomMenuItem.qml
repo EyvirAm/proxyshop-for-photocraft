@@ -1,3 +1,5 @@
+// Themed context menu item.
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls

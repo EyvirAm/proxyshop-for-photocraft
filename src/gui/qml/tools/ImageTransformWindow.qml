@@ -1,3 +1,5 @@
+// Tool window for transforming card images before rendering.
+
 pragma ComponentBehavior: Bound
 import QtQml
 import QtQuick

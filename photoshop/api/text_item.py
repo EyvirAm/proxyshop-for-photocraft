@@ -46,36 +46,43 @@ class TextItem(Photoshop):
 
     @property
     def contents(self) -> str:
+        """Text contents."""
         return self._contents
 
     @contents.setter
     def contents(self, value: str) -> None:
+        """Set the text contents and sync them to PhotoCraft."""
         self._contents = str(value)
         if self.parent is not None and hasattr(self.parent, "_sync_text_to_photocraft"):
             self.parent._sync_text_to_photocraft()
 
     @property
     def font(self) -> str:
+        """Font PostScript name."""
         return self._font
 
     @font.setter
     def font(self, value: str) -> None:
+        """Set the font and sync it to PhotoCraft."""
         self._font = str(value)
         if self.parent is not None and hasattr(self.parent, "_sync_style_to_photocraft"):
             self.parent._sync_style_to_photocraft(font=self._font)
 
     @property
     def size(self) -> float:
+        """Font size in points."""
         return self._size
 
     @size.setter
     def size(self, value: float) -> None:
+        """Set the font size and sync it to PhotoCraft."""
         self._size = float(value)
         if self.parent is not None and hasattr(self.parent, "_sync_style_to_photocraft"):
             self.parent._sync_style_to_photocraft(size=self._size)
 
     @property
     def color(self) -> Any:
+        """Text color, defaulting to black when unset."""
         if self._color is None:
             from photoshop.api import SolidColor
 
@@ -84,16 +91,19 @@ class TextItem(Photoshop):
 
     @color.setter
     def color(self, value: Any) -> None:
+        """Set the text color and sync it to PhotoCraft."""
         self._color = value
         if self.parent is not None and hasattr(self.parent, "_sync_style_to_photocraft"):
             self.parent._sync_style_to_photocraft(color=self._color)
 
     @property
     def justification(self) -> Justification:
+        """Paragraph alignment."""
         return self._justification
 
     @justification.setter
     def justification(self, value: Justification) -> None:
+        """Set the paragraph alignment and sync it to PhotoCraft."""
         self._justification = value
         align_map = {
             Justification.Left: "left",
@@ -111,20 +121,24 @@ class TextItem(Photoshop):
 
     @property
     def hyphenation(self) -> bool:
+        """Whether hyphenation is enabled."""
         return self._hyphenation
 
     @hyphenation.setter
     def hyphenation(self, value: bool) -> None:
+        """Enable or disable hyphenation."""
         self._hyphenation = bool(value)
         if self.parent is not None and hasattr(self.parent, "_sync_style_to_photocraft"):
             self.parent._sync_style_to_photocraft(hyphenate=self._hyphenation)
 
     @property
     def baselineShift(self) -> float:
+        """Baseline shift in points."""
         return self._baseline_shift
 
     @baselineShift.setter
     def baselineShift(self, value: float) -> None:
+        """Set the baseline shift and sync it to PhotoCraft."""
         self._baseline_shift = float(value)
         if self.parent is not None and hasattr(self.parent, "_sync_style_to_photocraft"):
             self.parent._sync_style_to_photocraft(baselineShift=self._baseline_shift)

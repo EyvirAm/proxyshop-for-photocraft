@@ -25,6 +25,7 @@ class TestPhotocraftBackend:
     """End-to-end tests for the Photocraft backend adapter in Proxyshop."""
 
     def test_handler_initialization(self) -> None:
+        """Verify the PhotoCraft handler initializes."""
         handler = PhotoshopHandler()
         assert isinstance(handler, PhotocraftHandler)
         assert handler.has_cli_binary() is True
@@ -38,6 +39,7 @@ class TestPhotocraftBackend:
         assert info.get("width", 0) > 0 and info.get("height", 0) > 0
 
     def test_load_psd_and_inspect_hierarchy(self) -> None:
+        """Verify loading a PSD and walking its layers."""
         psd_path = Path("templates/tools/showcase.psd").resolve()
         assert psd_path.exists()
 
@@ -61,6 +63,7 @@ class TestPhotocraftBackend:
         close_document(save=False, docref=doc)
 
     def test_layer_manipulation_and_export(self, tmp_path: Path) -> None:
+        """Verify layer edits and export."""
         psd_path = Path("templates/tools/showcase.psd").resolve()
         doc = APP.instance.load(psd_path)
 

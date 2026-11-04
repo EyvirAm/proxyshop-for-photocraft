@@ -1,3 +1,5 @@
+// Tool window for inspecting the Qt system palette.
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

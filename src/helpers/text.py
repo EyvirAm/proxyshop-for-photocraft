@@ -534,6 +534,7 @@ def get_text_click_point(
     document_height: float | None = None,
     text_key: ActionDescriptor | None = None,
 ) -> tuple[float, float]:
+    """Return a click point inside a text layer."""
     if not text_key:
         text_key = get_text_key(layer)
     if document_width is None or document_height is None:

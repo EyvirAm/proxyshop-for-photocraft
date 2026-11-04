@@ -34,14 +34,17 @@ class PlanarTemplate(StarterTemplate):
 
     @cached_property
     def text_layer_static_ability(self) -> ArtLayer | None:
+        """Text layer for the static ability of the plane."""
         return psd.getLayer(LAYERS.STATIC_ABILITY, self.text_group)
 
     @cached_property
     def text_layer_chaos_ability(self) -> ArtLayer | None:
+        """Text layer for the chaos ability of the plane."""
         return psd.getLayer(LAYERS.CHAOS_ABILITY, self.text_group)
 
     @cached_property
     def text_layer_chaos_symbol(self) -> ArtLayer | None:
+        """Chaos symbol layer placed next to the chaos ability."""
         return psd.getLayer(LAYERS.CHAOS_SYMBOL, self.text_group)
 
     @cached_property
@@ -74,6 +77,7 @@ class PlanarTemplate(StarterTemplate):
             )
 
     def rules_text_and_pt_layers(self):
+        """Add static/chaos text and toggle the dark chaos band mask."""
         if self.has_dark_band:
             psd.enable_mask(psd.getLayerSet(LAYERS.TEXTBOX))
         else:

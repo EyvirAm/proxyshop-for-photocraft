@@ -1,3 +1,8 @@
+"""
+* GUI: Message Dialog Content Model
+
+QML model for message dialog content and actions.
+"""
 from __future__ import annotations
 from asyncio import Future, get_running_loop
 from collections.abc import Callable
@@ -11,6 +16,7 @@ from src.utils.asynchronic import try_threadsafe_set_result
 
 
 class MessageDialogContentModel(QObject):
+    """QML model for message dialog content, actions and manual-edit overlay."""
     def __init__(
         self,
         /,
@@ -48,10 +54,12 @@ class MessageDialogContentModel(QObject):
 
     @Property(str, notify=_title_changed)
     def title(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Dialog title."""
         return self._title
 
     @title.setter
     def title(self, value: str) -> None:
+        """Set dialog title."""
         if value != self._title:
             self._title = value
             self._title_changed.emit()
@@ -60,10 +68,12 @@ class MessageDialogContentModel(QObject):
 
     @Property(str, notify=_text_changed)
     def text(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Dialog body text."""
         return self._text
 
     @text.setter
     def text(self, value: str) -> None:
+        """Set dialog body text."""
         if value != self._text:
             self._text = value
             self._text_changed.emit()
@@ -72,10 +82,12 @@ class MessageDialogContentModel(QObject):
 
     @Property(str, notify=_informative_text_changed)
     def informative_text(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Informative text shown below the body."""
         return self._informative_text
 
     @informative_text.setter
     def informative_text(self, value: str) -> None:
+        """Set informative text shown below the body."""
         if value != self._informative_text:
             self._informative_text = value
             self._informative_text_changed.emit()
@@ -84,27 +96,32 @@ class MessageDialogContentModel(QObject):
 
     @Property(str, notify=_detailed_text_changed)
     def detailed_text(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Detailed text shown in the dialog."""
         return self._detailed_text
 
     @detailed_text.setter
     def detailed_text(self, value: str) -> None:
+        """Set detailed text shown in the dialog."""
         if value != self._detailed_text:
             self._detailed_text = value
             self._detailed_text_changed.emit()
 
     @Slot()
     def ok(self) -> None:
+        """Invoke the OK callback and close the dialog."""
         if self.ok_callback:
             self.ok_callback()
 
     @Slot()
     def cancel(self) -> None:
+        """Invoke the cancel callback and close the dialog."""
         if self.cancel_callback:
             self.cancel_callback()
 
     _dismissed = Signal(name="dismissed")
 
     def dismiss(self) -> None:
+        """Hide the manual-edit overlay."""
         self._dismissed.emit()
 
     dialog_requested = Signal(name="dialogRequested")
@@ -150,6 +167,7 @@ class MessageDialogContentModel(QObject):
 
     @Slot()
     def refresh_manual_edit_overlay(self) -> None:
+        """Refresh manual edit overlay."""
         if not self._manual_edit_overlay_visible:
             return
         self._refresh_manual_edit_overlay_geometry()
@@ -183,30 +201,37 @@ class MessageDialogContentModel(QObject):
 
     @Property(bool, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_visible(self) -> bool:
+        """Manual edit overlay visible."""
         return self._manual_edit_overlay_visible
 
     @Property(str, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_title(self) -> str:
+        """Manual edit overlay title."""
         return self._manual_edit_overlay_title
 
     @Property(str, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_text(self) -> str:
+        """Manual edit overlay text."""
         return self._manual_edit_overlay_text
 
     @Property(int, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_x(self) -> int:
+        """Manual edit overlay x."""
         return self._manual_edit_overlay_x
 
     @Property(int, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_y(self) -> int:
+        """Manual edit overlay y."""
         return self._manual_edit_overlay_y
 
     @Property(int, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_width(self) -> int:
+        """Manual edit overlay width."""
         return self._manual_edit_overlay_width
 
     @Property(int, notify=_manual_edit_overlay_changed)
     def manual_edit_overlay_height(self) -> int:
+        """Manual edit overlay height."""
         return self._manual_edit_overlay_height
 
     def open_message_dialog(
@@ -218,6 +243,7 @@ class MessageDialogContentModel(QObject):
         ok_callback: Callable[[], Any] | None = None,
         cancel_callback: Callable[[], Any] | None = None,
     ) -> None:
+        """Open message dialog."""
         self.title = title  # pyright: ignore[reportAttributeAccessIssue]
         self.text = text  # pyright: ignore[reportAttributeAccessIssue]
         self.informative_text = informative_text  # pyright: ignore[reportAttributeAccessIssue]
@@ -233,6 +259,7 @@ class MessageDialogContentModel(QObject):
         informative_text: str = "",
         detailed_text: str = "",
     ) -> bool:
+        """Open message dialog async."""
         future: Future[bool] = get_running_loop().create_future()
         self.open_message_dialog(
             title=title,

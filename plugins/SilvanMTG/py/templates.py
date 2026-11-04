@@ -42,6 +42,7 @@ class SilvanMDFCTemplate(MDFCMod, ExtendedMod, M15Template):
     """Silvan extended template modified for MDFC cards."""
 
     def enable_crown(self) -> None:
+        """Enable crown."""
         super().enable_crown()
 
         # Enable pinlines and background mask

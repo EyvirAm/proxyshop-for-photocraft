@@ -1,3 +1,5 @@
+// Themed push button.
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls

@@ -39,6 +39,7 @@ class LayerSet(Layer):
 
     @property
     def layers(self) -> list[ArtLayer | LayerSet]:
+        """Layers and nested groups inside this set."""
         return [*self.artLayers._items, *self.layerSets._items]
 
     def _remove_child(self, child: Layer) -> None:
@@ -49,6 +50,7 @@ class LayerSet(Layer):
 
     @property
     def bounds(self) -> tuple[float, float, float, float]:
+        """Combined bounds of the visible children."""
         vis_bounds: list[tuple[float, float, float, float]] = []
         all_bounds: list[tuple[float, float, float, float]] = []
         for art in self.artLayers._items:
@@ -75,6 +77,7 @@ class LayerSet(Layer):
 
     @bounds.setter
     def bounds(self, value: tuple[float, float, float, float]) -> None:
+        """Update the cached group bounds."""
         self._bounds = value
 
     def _shift_children_bounds(self, dx: int, dy: int) -> None:
@@ -87,6 +90,7 @@ class LayerSet(Layer):
             grp._shift_children_bounds(dx, dy)
 
     def translate(self, delta_x: float = 0.0, delta_y: float = 0.0) -> None:
+        """Move the group and all of its children."""
         dx = int(round(delta_x))
         dy = int(round(delta_y))
         if dx == 0 and dy == 0:
@@ -139,6 +143,7 @@ class LayerSet(Layer):
         relativeObject: Any = None,
         insertionLocation: ElementPlacement | None = None,
     ) -> LayerSet:
+        """Duplicate the group, optionally relative to another layer."""
         target_parent = (
             relativeObject
             if insertionLocation == ElementPlacement.PlaceInside
@@ -179,6 +184,7 @@ class LayerSet(Layer):
         node: dict[str, Any] | None = None
 
         def find(items: list[dict[str, Any]]) -> dict[str, Any] | None:
+            """Find."""
             for item in items:
                 if int(item.get("id", -1)) == new_id:
                     return item
@@ -217,6 +223,7 @@ class LayerSet(Layer):
         return dup
 
     def merge(self) -> ArtLayer:
+        """Merge the group into a single art layer."""
         self._exec_photocraft("layer.mergeGroup", {"layer": self._id})
         art = ArtLayer(
             parent=self.parent,
@@ -242,10 +249,12 @@ class LayerSets:
 
     @property
     def app(self) -> LayerSets:
+        """The collection itself, mirroring the Photoshop API."""
         return self
 
     @property
     def length(self) -> int:
+        """Number of layer groups in the collection."""
         return len(self._items)
 
     def __len__(self) -> int:
@@ -260,6 +269,7 @@ class LayerSets:
         return self.getByName(key)
 
     def getByName(self, name: str) -> LayerSet:
+        """Return a group by name, falling back to a case-insensitive match."""
         for item in self._items:
             if item.name == name:
                 return item
@@ -269,9 +279,11 @@ class LayerSets:
         raise KeyError(f"LayerSet '{name}' not found")
 
     def add(self) -> LayerSet:
+        """Create a new, empty layer group at the top of the collection."""
         grp = LayerSet(parent=self.parent, name=f"Group {len(self._items) + 1}")
         self._items.insert(0, grp)
         return grp
 
     def removeAll(self) -> None:
+        """Remove every group from the collection."""
         self._items.clear()

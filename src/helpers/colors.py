@@ -103,6 +103,7 @@ def get_rgb_from_hex(hex_code: str) -> SolidColor:
 
 
 def get_rgb_tuple(color: ColorObject) -> tuple[float, float, float]:
+    """Return a color as an ``(r, g, b)`` tuple."""
     if isinstance(color, tuple) and len(color) == 3:
         return color
     colr = get_color(color)

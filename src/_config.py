@@ -38,49 +38,69 @@ from src.utils.event import SubscribableEvent
 
 
 class BaseConfig(BaseModel):
+    """Base of a settings schema; holds the prefix used for section keys."""
+
     prefix: str
 
 
 class BaseSection(BaseModel):
+    """Common title carried by every settings section."""
+
     title: str
 
 
 class SectionTitle(BaseSection):
+    """Non-setting entry used to render a section heading."""
+
     type: Literal["title"] = "title"
 
 
 class BaseSetting(BaseSection):
+    """Common fields shared by every typed setting."""
+
     desc: str = ""
     key: str = ""
     section: str = ""
 
 
 class BoolSetting(BaseSetting):
+    """Boolean on/off setting."""
+
     type: Literal["bool"]
     default: bool = False
 
 
 class StringSetting(BaseSetting):
+    """Free-form string setting."""
+
     type: Literal["string"]
     default: str = ""
 
 
 class NumericSetting(BaseSetting):
+    """Numeric setting accepting an integer or a float."""
+
     type: Literal["numeric"]
     default: int | float = 0
 
 
 class FloatSetting(BaseSetting):
+    """Floating-point setting."""
+
     type: Literal["float"]
     default: float = 0
 
 
 class IntSetting(BaseSetting):
+    """Integer setting."""
+
     type: Literal["int"]
     default: int = 0
 
 
 class OptionsSetting(BaseSetting):
+    """Setting restricted to a list of string options."""
+
     type: Literal["options"]
     options: list[str] = []
     default: str
@@ -97,6 +117,8 @@ TypedSetting = (
 
 
 class FormattedSettingsConfig(RootModel[list[SectionTitle | TypedSetting]]):
+    """Flattened list of section titles and settings, ready for the GUI."""
+
     root: list[SectionTitle | TypedSetting] = []
 
 
@@ -104,11 +126,14 @@ _SomeSetting = RootModel[TypedSetting]
 
 
 class ConfigSection(BaseSection):
+    """One named section holding dynamically validated settings."""
+
     settings: dict[str, TypedSetting] = Field(default={}, exclude=True)
 
     @model_validator(mode="before")
     @classmethod
     def extra_validator(cls, data: Any) -> Any:
+        """Move unknown keys into validated setting entries."""
         if isinstance(data, dict):
             for key, value in data.items():  # pyright: ignore[reportUnknownVariableType]
                 if not isinstance(key, str) or key in cls.model_fields:
@@ -118,6 +143,7 @@ class ConfigSection(BaseSection):
 
     @model_validator(mode="after")
     def post_validate(self) -> ConfigSection:
+        """Expose the collected settings through ``settings``."""
         if self.model_extra:
             self.settings = self.model_extra
         return self
@@ -126,6 +152,8 @@ class ConfigSection(BaseSection):
 
 
 class SettingsConfig(BaseModel):
+    """Parsed settings file: optional config table plus its sections."""
+
     config: Annotated[BaseConfig | None, Field(alias="__CONFIG__")] = None
     sections: Annotated[
         FormattedSettingsConfig,
@@ -135,6 +163,7 @@ class SettingsConfig(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def extra_validator(cls, data: Any) -> Any:
+        """Validate every top-level section table."""
         if isinstance(data, dict):
             exclude_keys = [*cls.model_fields.keys(), "__CONFIG__"]
             for key, value in data.items():  # pyright: ignore[reportUnknownVariableType]
@@ -145,6 +174,7 @@ class SettingsConfig(BaseModel):
 
     @model_validator(mode="after")
     def post_validate(self) -> SettingsConfig:
+        """Flatten sections into section-title and setting entries."""
         if self.model_extra:
             sections: dict[str, ConfigSection] = self.model_extra
             prefix = self.config.prefix if self.config else None
@@ -171,11 +201,15 @@ def parse_settings_config(data_path: Path) -> FormattedSettingsConfig:
 
 
 class CustomConfigParser(RawConfigParser):
+    """ConfigParser that preserves the original casing of option names."""
+
     def optionxform(self, optionstr: str) -> str:
+        """Return option names unchanged."""
         return optionstr
 
 
 def configparser_to_dict(parser: RawConfigParser) -> dict[str, dict[str, str]]:
+    """Convert a parser into a plain nested ``section -> option -> value`` dict."""
     return {
         section: {key: value for key, value in content.items()}
         for section, content in parser.items()
@@ -210,22 +244,27 @@ class ConfigHandler:
 
     @cached_property
     def id(self) -> str:
+        """Stable identifier for this config, derived from its INI path."""
         return str(self.ini_path)
 
     @cached_property
     def has_config(self) -> bool:
+        """Whether the INI file exists on disk."""
         return self.ini_path.is_file()
 
     @cached_property
     def base_schema(self) -> FormattedSettingsConfig:
+        """Parsed base settings schema shared by every template."""
         return parse_settings_config(self.base_schema_path)
 
     @cached_property
     def schema(self) -> FormattedSettingsConfig | None:
+        """Parsed template-specific schema, if one was provided."""
         return parse_settings_config(self.schema_path) if self.schema_path else None
 
     @cached_property
     def ini_schema(self) -> type[BaseModel]:
+        """Build a Pydantic model describing the valid INI values."""
         sections: dict[str, dict[str, Any]] = {}
         for schema in (
             (self.base_schema.root, self.schema.root)
@@ -240,7 +279,9 @@ class ConfigHandler:
                     # the loop within each function
                     def validator_factory(item: TypedSetting = entry):
                         # Set invalid settings to their default value
+                        """Validator factory."""
                         def validator(v: Any, handler: Callable[[Any], Any]) -> Any:
+                            """Validator."""
                             try:
                                 return handler(v)
                             except ValidationError:
@@ -259,7 +300,9 @@ class ConfigHandler:
             model = create_model(key, **item)
 
             def factory(modl: type[BaseModel] = model):
+                """Factory."""
                 def validator(v: Any, handler: Callable[[Any], Any]) -> Any:
+                    """Validator."""
                     try:
                         return handler(v)
                     except ValidationError:
@@ -285,6 +328,7 @@ class ConfigHandler:
 
     @property
     def parser(self) -> RawConfigParser:
+        """Current values exposed as a ``ConfigParser`` instance."""
         vals = self.setting_values
         self._parser.clear()
         self._parser.read_dict(vals)
@@ -305,6 +349,7 @@ class ConfigHandler:
         return values
 
     def set_value(self, section: str, key: str, value: float | str | bool) -> bool:
+        """Set one value in memory; returns False for unknown section/key."""
         if section in self.setting_values and key in self.setting_values[section]:
             self.setting_values[section][key] = value
             return True
@@ -314,6 +359,7 @@ class ConfigHandler:
         self,
         force: bool = False,
     ) -> None:
+        """Write the INI file when values changed, or always if ``force`` is set."""
         # Save only if something has changed
         if force or (
             self._initial_setting_values
@@ -327,10 +373,12 @@ class ConfigHandler:
             self.config_added.trigger(self)
 
     def reset(self) -> None:
+        """Restore every setting to its schema default and notify listeners."""
         self.setting_values = self.ini_schema().model_dump()
         self.config_reset.trigger(self)
 
     def delete(self, notify: bool = True) -> None:
+        """Delete the INI file and emit ``config_deleted`` when requested."""
         self.ini_path.unlink(missing_ok=True)
         self.has_config = False
         if notify:
@@ -344,6 +392,7 @@ class ConfigHandler:
         key: str,
         default: float | str | bool | None = None,
     ) -> int | float | str | bool | None:
+        """Read a raw setting value, falling back to ``default``."""
         if sect := self.setting_values.get(section, None):
             return sect.get(key, default)
         return default
@@ -359,6 +408,7 @@ class ConfigHandler:
     def get_bool_setting(
         self, section: str, key: str, default: bool | None = None
     ) -> bool | None:
+        """Read a boolean setting, coercing the stored value."""
         return bool(self.get_setting(section, key, default))
 
     @overload
@@ -372,6 +422,7 @@ class ConfigHandler:
     def get_int_setting(
         self, section: str, key: str, default: int | None = None
     ) -> int | None:
+        """Read an integer setting, falling back to ``default``."""
         setting = self.get_setting(section, key, None)
         if setting is not None:
             return int(setting)
@@ -388,6 +439,7 @@ class ConfigHandler:
     def get_float_setting(
         self, section: str, key: str, default: float | None = None
     ) -> float | None:
+        """Read a float setting, falling back to ``default``."""
         setting = self.get_setting(section, key, None)
         if setting is not None:
             return float(setting)
@@ -404,6 +456,7 @@ class ConfigHandler:
     def get_str_setting(
         self, section: str, key: str, default: str | None = None
     ) -> str | None:
+        """Read a string setting, falling back to ``default``."""
         setting = self.get_setting(section, key, None)
         if setting is not None:
             return str(setting)
@@ -422,6 +475,7 @@ class ConfigHandler:
     def get_enum_setting[T: Enum](
         self, section: str, key: str, enum_type: type[T], default: T | None = None
     ) -> T | None:
+        """Read an enum setting, falling back to ``default`` when invalid."""
         setting = self.get_setting(section, key, None)
         if setting is not None:
             return enum_type(setting)
@@ -455,12 +509,14 @@ class AppConfig:
 
     @property
     def lang(self) -> str:
+        """Scryfall language code used when fetching card data."""
         return self.app_config.get_str_setting(
             "APP.DATA", "Scryfall.Language", default="en"
         )
 
     @property
     def scry_sorting(self) -> ScryfallSorting:
+        """Default Scryfall sorting order."""
         return self.app_config.get_enum_setting(
             "APP.DATA",
             "Scryfall.Sorting",
@@ -470,30 +526,35 @@ class AppConfig:
 
     @property
     def scry_ascending(self) -> bool:
+        """Whether Scryfall results are sorted ascending."""
         return self.app_config.get_bool_setting(
             "APP.DATA", "Scryfall.Ascending", default=False
         )
 
     @property
     def scry_extras(self) -> bool:
+        """Whether Scryfall extra cards are included."""
         return self.app_config.get_bool_setting(
             "APP.DATA", "Scryfall.Extras", default=False
         )
 
     @property
     def scry_unique(self) -> ScryfallUnique:
+        """Scryfall uniqueness mode."""
         return self.app_config.get_enum_setting(
             "APP.DATA", "Scryfall.Unique", ScryfallUnique, default=ScryfallUnique.Arts
         )
 
     @property
     def manually_edit_card_data(self) -> bool:
+        """Whether to pause and let the user edit card data."""
         return self.app_config.get_bool_setting(
             "APP.DATA", "Manually.Edit.Card.Data", default=False
         )
 
     @property
     def manual_text_editor(self) -> str:
+        """Command template used to open the manual text editor."""
         return self.app_config.get_str_setting(
             "APP.DATA", "Manual.Text.Editor", default='notepad "{}"'
         )
@@ -752,6 +813,7 @@ class AppConfig:
     def get_bool_setting(
         self, section: str, key: str, default: bool | None = None
     ) -> bool | None:
+        """Read a boolean setting from the merged app/template config."""
         return self.get_setting(section, key, default, is_bool=True)
 
     @overload
@@ -765,6 +827,7 @@ class AppConfig:
     def get_int_setting(
         self, section: str, key: str, default: int | None = None
     ) -> int | None:
+        """Read an integer setting from the merged config."""
         setting = self.get_setting(section, key, None)
         if setting is not None:
             return int(setting)
@@ -781,6 +844,7 @@ class AppConfig:
     def get_float_setting(
         self, section: str, key: str, default: float | None = None
     ) -> float | None:
+        """Read a float setting from the merged config."""
         setting = self.get_setting(section, key, None)
         if setting is not None:
             return float(setting)

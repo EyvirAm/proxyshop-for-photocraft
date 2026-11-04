@@ -1,3 +1,8 @@
+"""
+* Utils: Logging
+
+Logging decorators.
+"""
 from __future__ import annotations
 from collections.abc import Callable
 from functools import wraps
@@ -11,9 +16,11 @@ def log_on_exception[**P, T, E: Exception](
     exception_type: type[E] = Exception,
     logger: Logger = _logger,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """Log exceptions raised by the decorated function."""
     def decorator(func: Callable[P, T]):
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs):
+            """Wrapper."""
             try:
                 return func(*args, **kwargs)
             except exception_type as e:

@@ -55,28 +55,38 @@ _logger = getLogger(__name__)
 
 
 class PowerToughness(TypedDict):
+    """Power and toughness values as displayed on the card."""
+
     power: str
     toughness: str
 
 
 class ProtoDetails(TypedDict):
+    """Prototype face values used by Prototype layouts."""
+
     oracle_text: str
     mana_cost: str
     pt: str
 
 
 class PlaneswalkerAbility(TypedDict):
+    """One loyalty ability of a planeswalker."""
+
     text: str
     icon: str
     cost: str
 
 
 class SagaLine(TypedDict):
+    """One line of Saga chapter text and its chapter icons."""
+
     text: str
     icons: list[str]
 
 
 class ClassLine(TypedDict):
+    """One class level entry: cost, level label and rules text."""
+
     cost: str | None
     level_translation: str
     level: str
@@ -183,6 +193,7 @@ def join_dual_card_layouts[T: NormalLayout | None](
 
 
 def _get_other_side_color_identity(colors: list[str], mana_cost: str) -> str:
+    """Pick the frame color layer for the other half of a dual card."""
     if check_hybrid_mana_cost(colors, mana_cost):
         return LAYERS.LAND
     if len(colors) > 1:
@@ -221,18 +232,22 @@ class NormalLayout:
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Normal
 
     @cached_property
     def category(self) -> LayoutCategory:
+        """Display category derived from the layout type."""
         return layout_map_types[self.type]
 
     @cached_property
     def is_transform(self) -> bool:
+        """Whether the card uses a transform layout."""
         return False
 
     @cached_property
     def is_mdfc(self) -> bool:
+        """Whether the card uses a modal double-faced layout."""
         return False
 
     """
@@ -241,14 +256,17 @@ class NormalLayout:
 
     @cached_property
     def is_panorama(self) -> bool:
+        """Whether the art spans more than one panorama tile."""
         return self.panorama_size[0] > 1 or self.panorama_size[1] > 1
 
     @cached_property
     def is_vertical_panorama(self) -> bool:
+        """Whether the panorama spans multiple rows."""
         return self.panorama_size[1] > 1
 
     @cached_property
     def panorama_element(self) -> tuple[int, int]:
+        """Position of this card within its panorama grid as ``(x, y)``."""
         pano_pos_arg = self.file["kwargs"].get("pano_pos", None)
         if (
             pano_pos_arg is not None
@@ -263,6 +281,7 @@ class NormalLayout:
 
     @cached_property
     def panorama_size(self) -> tuple[int, int]:
+        """Panorama grid size as ``(columns, rows)``."""
         panorama_size = self.file["kwargs"].get("pano_size", "1x1")
         panorama_size = [int(c) for c in panorama_size.split("x", maxsplit=1)]
         if len(panorama_size) < 2:
@@ -1017,6 +1036,7 @@ class MutateLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Mutate
 
     """
@@ -1052,6 +1072,7 @@ class PrototypeLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Prototype
 
     """
@@ -1060,6 +1081,7 @@ class PrototypeLayout(NormalLayout):
 
     @cached_property
     def oracle_text(self) -> str:
+        """Oracle text with the prototype line removed."""
         return self.proto_details["oracle_text"]
 
     """
@@ -1106,6 +1128,7 @@ class PlaneswalkerLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Planeswalker
 
     """
@@ -1197,6 +1220,7 @@ class PlaneswalkerTransformLayout(PlaneswalkerLayout):
     # Static properties
     @cached_property
     def is_transform(self) -> bool:
+        """Planeswalkers with this layout transform between two faces."""
         return True
 
     @cached_property
@@ -1215,6 +1239,7 @@ class PlaneswalkerMDFCLayout(PlaneswalkerLayout):
     # Static properties
     @cached_property
     def is_mdfc(self) -> bool:
+        """Planeswalkers with this layout use modal double-faced cards."""
         return True
 
     @cached_property
@@ -1233,6 +1258,7 @@ class TransformLayout(NormalLayout):
     # Static properties
     @cached_property
     def is_transform(self) -> bool:
+        """Transform cards have two faces."""
         return True
 
     @cached_property
@@ -1247,6 +1273,7 @@ class ModalDoubleFacedLayout(NormalLayout):
     # Static properties
     @cached_property
     def is_mdfc(self) -> bool:
+        """Modal double-faced cards have two faces."""
         return True
 
     @cached_property
@@ -1273,6 +1300,7 @@ class AdventureLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Adventure
 
     """
@@ -1345,6 +1373,7 @@ class LevelerLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Leveler
 
     """
@@ -1401,6 +1430,7 @@ class SagaLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Saga
 
     _chapter_regex = re.compile(r"^[ ,IVXLCDM]+ — ")
@@ -1477,6 +1507,7 @@ class ClassLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Class
 
     """
@@ -1535,6 +1566,7 @@ class CaseLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Case
 
     @cached_property
@@ -1548,6 +1580,7 @@ class BattleLayout(TransformLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Battle
 
     """
@@ -1565,6 +1598,7 @@ class PlanarLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Planar
 
 
@@ -1573,43 +1607,53 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Split
 
     # Static properties
     @cached_property
     def is_nyx(self) -> bool:
+        """Split cards never use the Nyx enchantment texture."""
         return False
 
     @cached_property
     def is_land(self) -> bool:
+        """Split cards are never treated as a single land."""
         return False
 
     @cached_property
     def is_basic_land(self) -> bool:
+        """Split cards are never basic lands."""
         return False
 
     @cached_property
     def is_artifact(self) -> bool:
+        """Split cards are never treated as a single artifact."""
         return False
 
     @cached_property
     def is_creature(self) -> bool:
+        """Split cards never expose a single creature front."""
         return False
 
     @cached_property
     def is_legendary(self) -> bool:
+        """Split cards are never treated as legendary."""
         return False
 
     @cached_property
     def is_companion(self) -> bool:
+        """Split cards are never companions."""
         return False
 
     @cached_property
     def toughness(self) -> str:
+        """Split cards have no single toughness value."""
         return ""
 
     @cached_property
     def power(self) -> str:
+        """Split cards have no single power value."""
         return ""
 
     def __str__(self):
@@ -1625,6 +1669,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def art_file(self) -> Path:
+        """Art file for the first half of the split card."""
         return self.art_files[0]
 
     @cached_property
@@ -1639,6 +1684,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def card(self) -> ScryfallCardFace:
+        """Scryfall data for the first half of the split card."""
         return self.cards[0]
 
     @cached_property
@@ -1666,6 +1712,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def watermark(self) -> str | None:
+        """Watermark of the first half."""
         return self.watermarks[0]
 
     @cached_property
@@ -1683,6 +1730,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def watermark_raw(self) -> str | None:
+        """Raw Scryfall watermark of the first half."""
         return self.watermarks_raw[0]
 
     @cached_property
@@ -1692,6 +1740,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def watermark_svg(self) -> Path | None:
+        """Watermark SVG path of the first half."""
         return self.watermark_svgs[0]
 
     @cached_property
@@ -1753,6 +1802,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def name(self) -> str:
+        """Name of the first half of the split card."""
         return self.names[0]
 
     @cached_property
@@ -1767,6 +1817,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def type_line(self) -> str:
+        """Type line of the first half."""
         return self.type_lines[0]
 
     @cached_property
@@ -1778,6 +1829,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def mana_cost(self) -> str:
+        """Mana cost of the first half."""
         return self.mana_costs[0]
 
     @cached_property
@@ -1787,6 +1839,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def oracle_text(self) -> str:
+        """Oracle text of the first half."""
         return self.oracle_texts[0]
 
     @cached_property
@@ -1813,6 +1866,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def flavor_text(self) -> str:
+        """Flavor text of the first half."""
         return self.flavor_texts[0]
 
     @cached_property
@@ -1822,6 +1876,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def shared_reminder(self) -> str:
+        """Reminder text shared by both halves, when identical."""
         prev_match: str = ""
         for oracle_text in [
             (
@@ -1844,6 +1899,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def is_hybrid(self) -> bool:
+        """Whether the first half uses a hybrid frame."""
         return self.hybrid_checks[0]
 
     @cached_property
@@ -1853,6 +1909,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def is_colorless(self) -> bool:
+        """Whether the first half is colorless."""
         return self.colorless_checks[0]
 
     @cached_property
@@ -1871,6 +1928,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def pinlines(self) -> str:
+        """Pinlines color identity shared by both halves."""
         return get_ordered_colors(self.color_identity)
 
     @cached_property
@@ -1880,6 +1938,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def twins(self) -> str:
+        """Name/title box identity, matching the pinlines."""
         return self.pinlines
 
     @cached_property
@@ -1889,6 +1948,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def background(self) -> str:
+        """Background identity, matching the pinlines."""
         return self.pinlines
 
     @cached_property
@@ -1898,6 +1958,7 @@ class SplitLayout(NormalLayout):
 
     @cached_property
     def identity(self) -> str:
+        """Frame color identity, matching the pinlines."""
         return self.pinlines
 
     @cached_property
@@ -1948,6 +2009,8 @@ class TokenLayout(NormalLayout):
 
 
 class StationDetails(TypedDict):
+    """Parsed Station requirement, ability and optional power/toughness."""
+
     requirement: str
     ability: str
     pt: NotRequired[PowerToughness]
@@ -1967,6 +2030,7 @@ class StationLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Station
 
     @cached_property
@@ -1987,6 +2051,7 @@ class StationLayout(NormalLayout):
 
     @cached_property
     def stations(self) -> list[StationDetails]:
+        """Station levels with their requirement, ability and optional P/T."""
         out: list[StationDetails] = []
 
         if self._station_levels_start_idx > -1:
@@ -2016,10 +2081,12 @@ class PrepareLayout(NormalLayout):
 
     @cached_property
     def type(self) -> LayoutType:
+        """Layout type handled by this class."""
         return LayoutType.Prepare
 
     @cached_property
     def spell_side(self) -> ScryfallCardFace:
+        """Scryfall data for the spell side of the card."""
         if self.scryfall.card_faces:
             return self.scryfall.card_faces[1]
         raise ValueError(
@@ -2028,24 +2095,29 @@ class PrepareLayout(NormalLayout):
 
     @cached_property
     def mana_prepare(self) -> str:
+        """Mana cost of the spell side."""
         return self.spell_side.mana_cost or ""
 
     @cached_property
     def name_prepare(self) -> str:
+        """Name of the spell side."""
         return self._get_card_name(self.spell_side)
 
     @cached_property
     def type_line_prepare(self) -> str:
+        """Type line of the spell side."""
         return self.spell_side.type_line or ""
 
     @cached_property
     def oracle_text_prepare(self) -> str:
+        """Oracle text of the spell side."""
         if self.is_alt_lang and self.spell_side.printed_text:
             return self.spell_side.printed_text
         return self.spell_side.oracle_text or ""
 
     @cached_property
     def flavor_text_prepare(self) -> str:
+        """Flavor text of the spell side."""
         return self.spell_side.flavor_text or ""
 
     @cached_property

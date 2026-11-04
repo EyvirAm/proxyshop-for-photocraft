@@ -25,6 +25,7 @@ class PrepareMod(NormalTemplate):
 
     @cached_property
     def is_prepare(self) -> bool:
+        """Whether the current layout is a Prepare layout."""
         return isinstance(self.layout, PrepareLayout)
 
     # region Text Layers
@@ -68,6 +69,7 @@ class PrepareMod(NormalTemplate):
 
     @cached_property
     def textbox_reference_prepare(self) -> ArtLayer | None:
+        """Textbox reference for the prepare side."""
         return psd.get_reference_layer(
             LAYERS.TEXTBOX_REFERENCE_PREPARE, self.text_group
         )
@@ -77,6 +79,7 @@ class PrepareMod(NormalTemplate):
     # region Methods
 
     def text_layers_prepare(self) -> None:
+        """Add and format the text layers of the prepare side."""
         if isinstance(self.layout, PrepareLayout):
             # Add prepare text layers
             if self.text_layer_mana_prepare:

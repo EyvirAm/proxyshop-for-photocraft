@@ -1,3 +1,5 @@
+// Log console view.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQuick

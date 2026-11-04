@@ -1,9 +1,15 @@
+"""
+* Utils: Lazy Loading
+
+Deferred value loading helpers.
+"""
 from __future__ import annotations
 from collections.abc import Callable
 from functools import cached_property
 
 
 class LazyLoader[T]:
+    """Value that is created on first access and cached."""
     def __init__(self, factory: Callable[[], T]) -> None:
         self._factory = factory
 

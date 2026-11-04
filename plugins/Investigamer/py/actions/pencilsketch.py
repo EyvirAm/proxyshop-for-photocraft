@@ -19,6 +19,7 @@ dialog_mode = DialogModes.DisplayNoDialogs
 
 
 def new_layer(index: int):
+    """Create a blank layer at the given index."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putClass(APP.instance.cID("Lyr "))
@@ -28,6 +29,7 @@ def new_layer(index: int):
 
 
 def select_bg():
+    """Select the Background layer."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putName(APP.instance.cID("Lyr "), "Background")
@@ -40,6 +42,7 @@ def select_bg():
 
 
 def reset_colors():
+    """Reset the foreground and background colors."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putProperty(APP.instance.cID("Clr "), APP.instance.cID("Clrs"))
@@ -48,6 +51,7 @@ def reset_colors():
 
 
 def move_layer(pos: int, index: int | list[int]):
+    """Move a layer to a new position in the stack."""
     if isinstance(index, int):
         index = [index]
     desc1 = ps.ActionDescriptor()
@@ -69,6 +73,7 @@ def move_layer(pos: int, index: int | list[int]):
 
 
 def set_opacity(opacity: float):
+    """Set the opacity of the active layer."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putEnumerated(
@@ -82,6 +87,7 @@ def set_opacity(opacity: float):
 
 
 def select_layer(name: str, index: int):
+    """Select a layer by name and index."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putName(APP.instance.cID("Lyr "), name)
@@ -94,6 +100,7 @@ def select_layer(name: str, index: int):
 
 
 def select_layers(name: str, layers: list[int]):
+    """Select several layers by name and indices."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putName(APP.instance.cID("Lyr "), name)
@@ -112,18 +119,21 @@ def select_layers(name: str, layers: list[int]):
 
 
 def auto_tone():
+    """Apply the Auto Tone adjustment."""
     desc1 = ps.ActionDescriptor()
     desc1.putBoolean(APP.instance.cID("Auto"), True)
     APP.instance.executeAction(APP.instance.cID("Lvls"), desc1, dialog_mode)
 
 
 def auto_contrast():
+    """Apply the Auto Contrast adjustment."""
     desc1 = ps.ActionDescriptor()
     desc1.putBoolean(APP.instance.cID("AuCo"), True)
     APP.instance.executeAction(APP.instance.cID("Lvls"), desc1, dialog_mode)
 
 
 def hide_layer(name: str | None = None):
+    """Hide the layer with the given name."""
     desc1 = ps.ActionDescriptor()
     list1 = ps.ActionList()
     ref1 = ps.ActionReference()
@@ -139,6 +149,7 @@ def hide_layer(name: str | None = None):
 
 
 def show_layer(name: str | None = None):
+    """Show the layer with the given name."""
     desc1 = ps.ActionDescriptor()
     list1 = ps.ActionList()
     ref1 = ps.ActionReference()
@@ -154,6 +165,7 @@ def show_layer(name: str | None = None):
 
 
 def delete_layers(layers: Iterable[int]):
+    """Delete the given layers."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putEnumerated(
@@ -173,6 +185,7 @@ BLENDING MODES
 
 
 def blend(key: str):
+    """Apply a blend mode by key."""
     desc1 = ps.ActionDescriptor()
     ref1 = ps.ActionReference()
     ref1.putEnumerated(
@@ -209,34 +222,42 @@ def filter_photocopy(detail: int = 2, darken: int = 5):
 
 # Utility commands
 def blend_multiply():
+    """Apply the Multiply blend mode."""
     blend("multiply")
 
 
 def blend_color_dodge():
+    """Apply the Color Dodge blend mode."""
     blend("colorDodge")
 
 
 def blend_linear_light():
+    """Apply the Linear Light blend mode."""
     blend("linearLight")
 
 
 def blend_linear_burn():
+    """Apply the Linear Burn blend mode."""
     blend("linearBurn")
 
 
 def blend_soft_light():
+    """Apply the Soft Light blend mode."""
     blend("softLight")
 
 
 def blend_screen():
+    """Apply the Screen blend mode."""
     blend("screen")
 
 
 def blend_overlay():
+    """Apply the Overlay blend mode."""
     blend("overlay")
 
 
 def blend_color():
+    """Apply the Color blend mode."""
     blend("color")
 
 

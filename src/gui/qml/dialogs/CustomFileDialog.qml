@@ -1,3 +1,5 @@
+// File picker dialog backed by FileDialogModel.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQuick

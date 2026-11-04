@@ -1,3 +1,8 @@
+"""
+* Utils: Text
+
+Rules text formatting helpers.
+"""
 from __future__ import annotations
 from re import finditer
 

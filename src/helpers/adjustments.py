@@ -37,6 +37,7 @@ def create_vibrant_saturation(vibrancy: int, saturation: int) -> None:
 
 
 class CreateColorLayerKwargs(TypedDict):
+    """Fields of ``CreateColorLayerKwargs``."""
     clipped: NotRequired[bool]
     blend_mode: NotRequired[BlendMode]
 
@@ -93,6 +94,7 @@ def create_color_layer(
 
 
 class CreateGradientLayerKwargs(TypedDict):
+    """Fields of ``CreateGradientLayerKwargs``."""
     blend_mode: NotRequired[BlendMode]
     clipped: NotRequired[bool]
     dither: NotRequired[bool]

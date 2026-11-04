@@ -1,3 +1,8 @@
+"""
+* Templates: Case
+
+Template modifier for Case cards (Murders at Karlov Manor).
+"""
 from __future__ import annotations
 from collections.abc import Callable
 from functools import cached_property
@@ -30,10 +35,12 @@ class CaseMod(NormalTemplate):
 
     @property
     def case_line_layers(self) -> list[ArtLayer]:
+        """Duplicated text layers, one per Case section."""
         return self._case_line_layers
 
     @case_line_layers.setter
     def case_line_layers(self, value: list[ArtLayer]) -> None:
+        """Set replace the cached Case line layers."""
         self._case_line_layers = value
 
     """
@@ -73,6 +80,7 @@ class CaseMod(NormalTemplate):
 
     @cached_property
     def case_group(self) -> LayerSet | None:
+        """Group containing Case-specific layers."""
         return getLayerSet(LAYERS.CASE)
 
     """
@@ -81,10 +89,12 @@ class CaseMod(NormalTemplate):
 
     @cached_property
     def text_layer_ability(self) -> ArtLayer | None:
+        """Template text layer for Case sections."""
         return getLayer(LAYERS.TEXT, self.case_group)
 
     @cached_property
     def case_ability_divider(self) -> ArtLayer | None:
+        """Divider layer placed between Case sections."""
         return getLayer(LAYERS.DIVIDER, self.case_group)
 
     """
@@ -92,6 +102,7 @@ class CaseMod(NormalTemplate):
     """
 
     def rules_text_and_pt_layers(self) -> None:
+        """Skip the generic rules step for non-creature Case cards."""
         if self.is_case_layout and not self.is_creature:
             return
         return super().rules_text_and_pt_layers()

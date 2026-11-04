@@ -1,3 +1,4 @@
+/** Extra UXP typings not shipped by the public photoshop types. */
 import "photoshop/dom/Document";
 import type { Layer } from "photoshop/dom/Layer";
 

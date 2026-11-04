@@ -1,1 +1,6 @@
+"""
+* Utils Package
+
+Shared utility helpers.
+"""
 from __future__ import annotations

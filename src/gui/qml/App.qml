@@ -1,3 +1,5 @@
+// Main application window: wires QML views to the Python models and handles global shortcuts.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQuick

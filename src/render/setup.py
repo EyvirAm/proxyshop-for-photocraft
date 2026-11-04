@@ -1,3 +1,8 @@
+"""
+* Render: Setup
+
+Defines render operations and prepares them for execution.
+"""
 from __future__ import annotations
 from asyncio import CancelledError, Future, Task, create_task, get_running_loop
 from collections.abc import Callable, Iterable, Mapping
@@ -26,10 +31,12 @@ _logger = getLogger(__name__)
 
 
 class PausedEventArgs(TypedDict):
+    """Fields of ``PausedEventArgs``."""
     message: str | None
 
 
 class RenderOperation:
+    """One card render operation, its template and state."""
     def __init__(
         self,
         template_class: type[BaseTemplate],
@@ -55,9 +62,11 @@ class RenderOperation:
 
     @property
     def paused(self):
+        """Event emitted when the operation pauses."""
         return self._paused
 
     async def render(self) -> bool:
+        """Run the render operation and return its success."""
         card_display_name = f"<b>{self.layout.display_name} ({self.layout.artist}) [{self.layout.set}] {{{self.layout.collector_number_raw}}} |{self.layout.category.value}| \\{self.template_class.__name__}/</b>"
         _logger.info(f"Starting rendering of {card_display_name}")
 
@@ -97,6 +106,7 @@ class RenderOperation:
             return False
 
     def cancel(self) -> None:
+        """Cancel the render operation."""
         if self.template_instance:
             self.template_instance.cancel()
         if (task := self.render_task) and not task.done():
@@ -107,6 +117,7 @@ class RenderOperation:
     async def pause(
         self, message: str | None = None, show_photoshop: bool = True
     ) -> bool:
+        """Pause the operation until the user resumes or cancels."""
         if self.do_not_pause:
             return True
 
@@ -123,9 +134,11 @@ class RenderOperation:
     def pause_sync(
         self, message: str | None = None, show_photoshop: bool = True
     ) -> bool:
+        """Pause sync."""
         return async_to_sync(self.pause(message, show_photoshop))
 
     def resume(self) -> None:
+        """Resume a paused render operation."""
         if (waiting := self._waiting) and not waiting.done():
             try_threadsafe_set_result(waiting, True)
 
@@ -137,6 +150,7 @@ def prepare_render_operations(
     file_dialog: FileDialogModel,
     message_dialog: MessageDialogContentModel,
 ) -> list[RenderOperation]:
+    """Prepare render operations."""
     if not template_choices:
         _logger.warning(
             "No template choices were provided, so no cards can be rendered. Please select some installed templates in the <i>Batch mode</i> in order to render cards with that feature."

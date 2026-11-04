@@ -1,3 +1,8 @@
+"""
+* Utils: Threading
+
+Thread-initialized instances with change listeners.
+"""
 from __future__ import annotations
 from collections.abc import Callable
 from functools import cached_property
@@ -7,6 +12,7 @@ from src.utils.event import SubscribableEvent
 
 
 class ThreadInitializedInstance[T]:
+    """Object that is constructed on a background thread."""
     def __init__(self, factory: Callable[[], T]) -> None:
         self._on_ready: SubscribableEvent[T] = SubscribableEvent()
         self._factory = factory
@@ -16,6 +22,7 @@ class ThreadInitializedInstance[T]:
     @cached_property
     def instance(self) -> T:
         # Instance access is synchronous
+        """The initialized instance, blocking until it is ready."""
         if thread := self.initialize():
             thread.join()
         return self.instance
@@ -36,6 +43,7 @@ class ThreadInitializedInstance[T]:
         if not self._initialization:
 
             def init_in_thread() -> None:
+                """Construct the instance and notify listeners."""
                 self.instance = self._factory()
                 self.ready = True
                 self._initialization = None
@@ -47,7 +55,9 @@ class ThreadInitializedInstance[T]:
         return self._initialization
 
     def add_listener(self, listener: Callable[[T], None]) -> None:
+        """Add listener."""
         self._on_ready.listen_once(listener)
 
     def remove_listener(self, listener: Callable[[T], None]) -> None:
+        """Remove listener."""
         self._on_ready.remove_listener(listener)

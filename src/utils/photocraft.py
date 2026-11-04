@@ -54,9 +54,11 @@ class PhotocraftRpcServer:
         self._req_id = 0
 
     def is_alive(self) -> bool:
+        """Whether the PhotoCraft process is running."""
         return self._proc is not None and self._proc.poll() is None
 
     def start(self) -> bool:
+        """Start the ``photocraft-cli serve`` process."""
         if self.is_alive():
             return True
         if not (Path(self.cli_path).exists() or shutil.which(self.cli_path)):
@@ -88,6 +90,7 @@ class PhotocraftRpcServer:
             return False
 
     def request(self, method: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        """Send an RPC request and return the parsed response."""
         if not self.start() or self._proc is None or self._proc.stdin is None or self._proc.stdout is None:
             return None
         self._req_id += 1
@@ -111,6 +114,7 @@ class PhotocraftRpcServer:
             return None
 
     def close(self) -> None:
+        """Stop the serve process and close its pipes."""
         if self._proc is not None:
             try:
                 if self._proc.stdin:
@@ -137,9 +141,11 @@ class PhotocraftHandler(Application):
         _logger.info(f"Initialized PhotocraftHandler with CLI: {self.cli_path}")
 
     def has_cli_binary(self) -> bool:
+        """Whether the object has cli binary."""
         return bool(Path(self.cli_path).exists() or shutil.which(self.cli_path))
 
     def run_command(self, args: list[str]) -> str:
+        """Run command."""
         cmd = [self.cli_path, *args]
         _logger.debug(f"Running Photocraft command: {' '.join(cmd)}")
         try:
@@ -217,6 +223,7 @@ class PhotocraftHandler(Application):
             return staged.relative_to(self.workspace_root).as_posix()
 
     def photocraft_open(self, path: Path) -> dict[str, Any] | None:
+        """Photocraft open."""
         if not self.has_cli_binary():
             return None
         # Close any previously open documents in the session
@@ -234,6 +241,7 @@ class PhotocraftHandler(Application):
         return None
 
     def photocraft_new(self, width: int, height: int) -> bool:
+        """Create a new document with the given size."""
         if not self.has_cli_binary():
             return False
         resp = self._rpc.request(
@@ -243,6 +251,7 @@ class PhotocraftHandler(Application):
         return bool(resp and resp.get("ok"))
 
     def photocraft_place(self, path: Path) -> dict[str, Any] | None:
+        """Place a file into the active document."""
         if not self.has_cli_binary() or not path.exists():
             return None
         rel = self._stage_input_rel_path(path)
@@ -252,6 +261,7 @@ class PhotocraftHandler(Application):
         return None
 
     def photocraft_save(self, out_path: Path, src_path: Path | None = None) -> bool:
+        """Save the active document to ``out_path``."""
         if not self.has_cli_binary():
             return False
         resolved_out = out_path.resolve()
@@ -273,10 +283,12 @@ class PhotocraftHandler(Application):
         return False
 
     def photocraft_close(self, doc: Any = None) -> None:
+        """Close the active document."""
         if self.has_cli_binary() and self._rpc.is_alive():
             self._rpc.request("doc.close", {})
 
     def photocraft_execute(self, command: str, params: dict[str, Any]) -> Any:
+        """Run an engine command and return its result."""
         if not self.has_cli_binary():
             return None
         resp = self._rpc.request("engine.execute", {"command": command, "params": params})

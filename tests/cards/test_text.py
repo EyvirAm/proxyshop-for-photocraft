@@ -1,3 +1,8 @@
+"""
+* Tests: Text
+
+Rules text formatting tests.
+"""
 from __future__ import annotations
 from typing import TypedDict
 
@@ -9,6 +14,7 @@ from tests.testing_utils import TestDataPaths
 
 
 class TestCaseTextItalic(TypedDict):
+    """Fields for ``TestCaseTextItalic``."""
     result: list[str]
     scenario: str
     text: str
@@ -18,7 +24,9 @@ ItalicTestCasesModel = RootModel[dict[str, TestCaseTextItalic]]
 
 
 class TestText:
+    """Rules text formatting tests."""
     def test_italicization(self) -> None:
+        """Verify rules-text italicization."""
         test_cases = parse_model(
             TestDataPaths.ITALIC_TEST_DATA, ItalicTestCasesModel
         ).root

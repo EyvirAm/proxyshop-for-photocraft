@@ -1,3 +1,5 @@
+// Render queue view with progress and cancellation.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQuick

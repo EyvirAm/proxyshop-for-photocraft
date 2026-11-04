@@ -102,6 +102,7 @@ class GradientColor(BaseModel):
 
 
 class GradientConfig(TypedDict):
+    """Fields of ``GradientConfig``."""
     color: ColorObject
     location: int | float
     midpoint: int | float
@@ -120,18 +121,21 @@ def _is_num_tuple_of_length(
 def is_rgb_tuple(
     val: ColorObject | Sequence[ColorObject] | Sequence[GradientConfig],
 ) -> TypeGuard[tuple[float, float, float]]:
+    """Whether the value is an RGB tuple."""
     return _is_num_tuple_of_length(val, 3)
 
 
 def is_cmyk_tuple(
     val: ColorObject | Sequence[ColorObject] | Sequence[GradientConfig],
 ) -> TypeGuard[tuple[float, float, float, float]]:
+    """Whether the value is a CMYK tuple."""
     return _is_num_tuple_of_length(val, 4)
 
 
 def is_rgb_or_cmyk_tuple(
     val: ColorObject | Sequence[ColorObject] | Sequence[GradientConfig],
 ) -> TypeGuard[tuple[float, float, float] | tuple[float, float, float, float]]:
+    """Whether the value is an RGB or CMYK tuple."""
     return is_rgb_tuple(val) or is_cmyk_tuple(val)
 
 

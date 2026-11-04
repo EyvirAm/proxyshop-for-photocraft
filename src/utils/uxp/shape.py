@@ -1,3 +1,8 @@
+"""
+* Utils: UXP Shapes
+
+Merge and combine vector shape layers.
+"""
 from __future__ import annotations
 from enum import StrEnum
 from typing import Literal, TypedDict
@@ -11,6 +16,7 @@ from .batch_play import ActionDescriptor, batch_play
 
 
 class ShapeOperation(StrEnum):
+    """``ShapeOperation`` options."""
     Unite = "add"
     SubtractFront = "subtract"
     UniteAtOverlap = "interfaceIconFrameDimmed"
@@ -18,16 +24,19 @@ class ShapeOperation(StrEnum):
 
 
 class ShapeOperationDescriptor(TypedDict):
+    """Fields of ``ShapeOperationDescriptor``."""
     _enum: Literal["shapeOperation"]
     _value: ShapeOperation
 
 
 class MergeShapesDescriptor(ActionDescriptor):
+    """BatchPlay descriptor for merging shapes."""
     _obj: Literal["mergeLayersNew"]
     shapeOperation: ShapeOperationDescriptor
 
 
 class CombineShapeComponentsDescriptor(ActionDescriptor):
+    """BatchPlay descriptor for combining shape components."""
     _obj: Literal["combine"]
 
 

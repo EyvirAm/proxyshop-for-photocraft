@@ -1,8 +1,14 @@
+"""
+* GUI: Base Dialog Model
+
+Base class for QML dialog models.
+"""
 from __future__ import annotations
 from PySide6.QtCore import Property, QObject, Qt, Signal
 
 
 class BaseDialogModel(QObject):
+    """Base class for QML dialog models."""
     def __init__(
         self, /, parent: QObject | None = None, *, objectName: str | None = None
     ) -> None:
@@ -14,10 +20,12 @@ class BaseDialogModel(QObject):
 
     @Property(Qt.WindowModality, notify=_modality_changed)
     def modality(self) -> Qt.WindowModality:  # pyright: ignore[reportRedeclaration]
+        """Dialog modality."""
         return self._modality
 
     @modality.setter
     def modality(self, value: Qt.WindowModality) -> None:
+        """Set dialog modality."""
         if value != self._modality:
             self._modality = value
             self._modality_changed.emit()
@@ -26,10 +34,12 @@ class BaseDialogModel(QObject):
 
     @Property(str, notify=_title_changed)
     def title(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Dialog title."""
         return self._title
 
     @title.setter
     def title(self, value: str) -> None:
+        """Set dialog title."""
         if value != self._title:
             self._title = value
             self._title_changed.emit()

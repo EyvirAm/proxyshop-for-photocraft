@@ -1,3 +1,8 @@
+"""
+* Utils: Images
+
+Card image saving and format helpers.
+"""
 from __future__ import annotations
 from os import PathLike
 from pathlib import Path
@@ -19,6 +24,7 @@ def save_scaled_card_image(
     downscale_width: int | None = None,
     quality: int = 95,
 ):
+    """Save a card image scaled to the given dimensions."""
     with Image.open(input_path) as f:
         if downscale_width is not None:
             img_width, img_height = f.size

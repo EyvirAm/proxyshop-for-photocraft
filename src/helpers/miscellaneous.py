@@ -399,6 +399,7 @@ def xmp_remove_ancestors() -> None:
 
 
 def create_color_shape(layer: ArtLayer, color: ColorObject) -> ArtLayer:
+    """Create a solid-color shape layer."""
     layer_name = layer.name
     color = psd.get_color(color)
     docref = APP.instance.activeDocument

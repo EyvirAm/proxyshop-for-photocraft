@@ -1,3 +1,8 @@
+"""
+* Tests: Layouts
+
+Card layout parsing tests.
+"""
 from __future__ import annotations
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
@@ -24,8 +29,10 @@ LayoutTestCases = RootModel[dict[str, dict[str, tuple[str, str, str, str, bool, 
 
 
 class TestLayouts:
+    """Layout assignment tests."""
     @fixture(autouse=True)
     def setup(self) -> None:
+        """Prepare shared fixtures for the tests."""
         test_data = parse_model(TestDataPaths.LAYOUT_TEST_DATA, LayoutTestCases).root
         self.layout_test_cases: list[
             tuple[str, tuple[str, str, str, str, bool, bool]]
@@ -35,6 +42,7 @@ class TestLayouts:
                 self.layout_test_cases.append((card_name, data))
 
     def test_layout_assignments(self) -> None:
+        """Verify layout assignment for the test cards."""
         with ThreadPoolExecutor(max_workers=min(4, cpu_count())) as executor:
             tasks: list[Future[None]] = []
 

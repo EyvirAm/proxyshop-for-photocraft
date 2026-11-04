@@ -37,6 +37,7 @@ class LevelerMod(NormalTemplate):
 
     @cached_property
     def is_leveler(self) -> bool:
+        """Whether the current layout is a Leveler layout."""
         return isinstance(self.layout, LevelerLayout)
 
     """
@@ -64,6 +65,7 @@ class LevelerMod(NormalTemplate):
 
     @cached_property
     def pt_layer(self) -> ArtLayer | None:
+        """P/T layer for leveler frames, using the twins color."""
         if self.is_leveler:
             return psd.getLayer(self.twins, LAYERS.PT_AND_LEVEL_BOXES)
         return super().pt_layer
@@ -74,12 +76,14 @@ class LevelerMod(NormalTemplate):
 
     @cached_property
     def text_layer_rules(self) -> ArtLayer | None:
+        """Level-up ability text layer."""
         if self.is_leveler:
             return psd.getLayer("Rules Text - Level Up", self.leveler_group)
         return super().text_layer_rules
 
     @cached_property
     def text_layer_pt(self) -> ArtLayer | None:
+        """Top power/toughness text layer."""
         if self.is_leveler:
             return psd.getLayer("Top Power / Toughness", self.leveler_group)
         return super().text_layer_pt
@@ -90,26 +94,32 @@ class LevelerMod(NormalTemplate):
 
     @cached_property
     def text_layer_rules_x_y(self) -> ArtLayer | None:
+        """Rules text for the middle level range."""
         return psd.getLayer("Rules Text - Levels X-Y", self.leveler_group)
 
     @cached_property
     def text_layer_rules_z(self) -> ArtLayer | None:
+        """Rules text for the top level range."""
         return psd.getLayer("Rules Text - Levels Z+", self.leveler_group)
 
     @cached_property
     def text_layer_level_middle(self) -> ArtLayer | None:
+        """Level requirement text for the middle stage."""
         return psd.getLayer("Middle Level", self.leveler_group)
 
     @cached_property
     def text_layer_level_bottom(self) -> ArtLayer | None:
+        """Level requirement text for the bottom stage."""
         return psd.getLayer("Bottom Level", self.leveler_group)
 
     @cached_property
     def text_layer_pt_middle(self) -> ArtLayer | None:
+        """P/T text for the middle stage."""
         return psd.getLayer("Middle Power / Toughness", self.leveler_group)
 
     @cached_property
     def text_layer_pt_bottom(self) -> ArtLayer | None:
+        """P/T text for the bottom stage."""
         return psd.getLayer("Bottom Power / Toughness", self.leveler_group)
 
     """
@@ -118,6 +128,7 @@ class LevelerMod(NormalTemplate):
 
     @cached_property
     def textbox_reference(self) -> ReferenceLayer | None:
+        """Textbox reference for the level-up area."""
         if self.is_leveler:
             return psd.get_reference_layer(
                 f"{LAYERS.TEXTBOX_REFERENCE} - Level Text", self.leveler_group
@@ -130,12 +141,14 @@ class LevelerMod(NormalTemplate):
 
     @cached_property
     def textbox_reference_x_y(self) -> ArtLayer | None:
+        """Textbox reference for the middle level range."""
         return psd.get_reference_layer(
             f"{LAYERS.TEXTBOX_REFERENCE} - Level X-Y", self.leveler_group
         )
 
     @cached_property
     def textbox_reference_z(self) -> ArtLayer | None:
+        """Textbox reference for the top level range."""
         return psd.get_reference_layer(
             f"{LAYERS.TEXTBOX_REFERENCE} - Levels Z+", self.leveler_group
         )

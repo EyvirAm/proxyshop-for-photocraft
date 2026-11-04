@@ -1,3 +1,8 @@
+"""
+* Helpers: Shape Layers
+
+Create shape layers and fill them with solid colors.
+"""
 from __future__ import annotations
 from collections.abc import Iterable
 
@@ -20,6 +25,7 @@ def create_shape_layer(
     hide: bool = False,
     color: ColorObject | None = None,
 ) -> ArtLayer:
+    """Create a shape layer in the active document."""
     solid_color = get_color(color) if color else rgb_black()
     docref = APP.instance.activeDocument
 

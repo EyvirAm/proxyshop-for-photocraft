@@ -387,6 +387,7 @@ def frame_layer_by_width(
 
 
 class RefSide(Enum):
+    """``RefSide`` options."""
     LEFT = 1
     TOP = 2
     RIGHT = 3
@@ -399,6 +400,7 @@ def check_bounds_overlap(
     ref_bounds: tuple[float, float, float, float],
     ref_side: RefSide,
 ) -> bool:
+    """Whether two bounding boxes overlap."""
     match ref_side:
         case RefSide.LEFT:
             return bounds[2] > ref_bounds[0]

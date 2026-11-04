@@ -11,12 +11,14 @@ from enum import StrEnum
 
 
 class OutputFileType(StrEnum):
+    """``OutputFileType`` options."""
     JPG = "jpg"
     PNG = "png"
     PSD = "psd"
 
 
 class ScryfallSorting(StrEnum):
+    """``ScryfallSorting`` options."""
     Released = "released"
     Set = "set"
     Rarity = "rarity"
@@ -27,6 +29,7 @@ class ScryfallSorting(StrEnum):
 
 
 class ScryfallUnique(StrEnum):
+    """``ScryfallUnique`` options."""
     Prints = "prints"
     Arts = "arts"
 
@@ -37,6 +40,7 @@ class ScryfallUnique(StrEnum):
 
 
 class CollectorMode(StrEnum):
+    """``CollectorMode`` options."""
     Normal = "default"
     Modern = "modern"
     Minimal = "minimal"
@@ -45,6 +49,7 @@ class CollectorMode(StrEnum):
 
 
 class BorderColor(StrEnum):
+    """``BorderColor`` options."""
     Black = "black"
     White = "white"
     Silver = "silver"
@@ -52,12 +57,14 @@ class BorderColor(StrEnum):
 
 
 class CollectorPromo(StrEnum):
+    """``CollectorPromo`` options."""
     Automatic = "automatic"
     Always = "always"
     Never = "never"
 
 
 class WatermarkMode(StrEnum):
+    """``WatermarkMode`` options."""
     Disabled = "Disabled"
     Automatic = "Automatic"
     Fallback = "Fallback"
@@ -65,6 +72,7 @@ class WatermarkMode(StrEnum):
 
 
 class FillMode(StrEnum):
+    """``FillMode`` options."""
     NO_FILL = "No Fill"
     CONTENT_AWARE_FILL = "Content-Aware Fill"
     GENERATIVE_FILL = "Generative Fill"
@@ -72,6 +80,7 @@ class FillMode(StrEnum):
 
 
 class NicknameShorten(StrEnum):
+    """``NicknameShorten`` options."""
     NO = "No"
     ALL_BUT_FIRST = "All but first"
     ALL = "All"
@@ -83,6 +92,7 @@ class NicknameShorten(StrEnum):
 
 
 class BorderlessColorMode(StrEnum):
+    """``BorderlessColorMode`` options."""
     All = "All"
     Twins_And_PT = "Twins and PT"
     Textbox = "Textbox"
@@ -92,6 +102,7 @@ class BorderlessColorMode(StrEnum):
 
 
 class BorderlessTextbox(StrEnum):
+    """``BorderlessTextbox`` options."""
     Automatic = "Automatic"
     Textless = "Textless"
     Normal = "Normal"
@@ -106,6 +117,7 @@ class BorderlessTextbox(StrEnum):
 
 
 class ModernClassicCrown(StrEnum):
+    """``ModernClassicCrown`` options."""
     Pinlines = "Pinlines"
     TexturePinlines = "Texture Pinlines"
     TextureBackground = "Texture Background"

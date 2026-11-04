@@ -1,3 +1,8 @@
+"""
+* Utils: Windows
+
+Win32 window helpers (foreground, topmost, focus).
+"""
 from __future__ import annotations
 from enum import IntEnum
 from logging import getLogger
@@ -13,6 +18,7 @@ _logger = getLogger()
 
 # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 class WindowState(IntEnum):
+    """``WindowState`` options."""
     HIDE = win32con.SW_HIDE
     NORMAL = win32con.SW_NORMAL
     SHOWMINIMIZED = win32con.SW_SHOWMINIMIZED
@@ -28,6 +34,7 @@ class WindowState(IntEnum):
 
 
 def set_window_state(window_handle: int, state: WindowState) -> None:
+    """Set the window state."""
     win32gui.ShowWindow(window_handle, state)
 
 
@@ -36,6 +43,7 @@ def get_window_handle_by_process_id(process_id: int) -> int | None:
     handles: list[int] = []
 
     def enum_callback(handle: int, _: object) -> None:
+        """Enum callback."""
         if not win32gui.IsWindowVisible(handle) or not win32gui.GetWindowText(handle):
             return
         try:
@@ -50,6 +58,7 @@ def get_window_handle_by_process_id(process_id: int) -> int | None:
         return None
 
     def area(handle: int) -> int:
+        """Area."""
         left, top, right, bottom = win32gui.GetWindowRect(handle)
         return max(0, right - left) * max(0, bottom - top)
 
@@ -68,6 +77,7 @@ def get_window_handle_by_process_file_path_suffix(suffix: str) -> int | None:
     window_handles: list[int] = []
 
     def enum_callback(handle: int, extra: list[int]):
+        """Enum callback."""
         window_handles.append(handle)
 
     win32gui.EnumWindows(enum_callback, extra)

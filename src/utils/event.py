@@ -1,16 +1,25 @@
+"""
+* Utils: Events
+
+Minimal subscribable event used across the app.
+"""
 from __future__ import annotations
 from collections.abc import Callable
 
 
 class SubscribableEvent[T]:
+    """Event that supports multiple listeners and one-shot subscriptions."""
     def __init__(self) -> None:
         self._listeners: set[Callable[[T], None]] = set()
 
     def add_listener(self, listener: Callable[[T], None]) -> None:
+        """Add listener."""
         self._listeners.add(listener)
 
     def listen_once(self, listener: Callable[[T], None]) -> None:
+        """Listen once."""
         def one_off(value: T) -> None:
+            """One off."""
             try:
                 self._listeners.remove(one_off)
             except KeyError:
@@ -20,6 +29,7 @@ class SubscribableEvent[T]:
         self.add_listener(one_off)
 
     def remove_listener(self, listener: Callable[[T], None]) -> bool:
+        """Remove listener."""
         try:
             self._listeners.remove(listener)
             return True

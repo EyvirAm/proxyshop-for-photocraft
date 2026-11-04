@@ -1,3 +1,8 @@
+"""
+* GUI: Test Renders Model
+
+QML model for the test render window.
+"""
 from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from collections.abc import Awaitable, Callable, Iterable, Sequence
@@ -28,6 +33,7 @@ _logger = getLogger(__name__)
 
 
 class TestRendersModel(QObject):
+    """QML model for the test render window."""
     def __init__(
         self,
         render_queue: RenderQueue,
@@ -54,16 +60,19 @@ class TestRendersModel(QObject):
 
     @cached_property
     def template_render_test_cases(self) -> dict[LayoutType, dict[str, str]]:
+        """Template render test cases."""
         return get_template_render_test_cases()
 
     _layout_categories_changed = Signal()
 
     @Property(list, notify=_layout_categories_changed)
     def layout_categories(self) -> list[LayoutCategory]:
+        """Layout categories."""
         return self._layout_categories
 
     @Slot(str, result=list)
     def get_test_cases_for_layout(self, layout: str) -> list[str]:
+        """Return the test cases for layout."""
         layout_category = LayoutCategory(layout)
         all_cases: list[str] = []
         for layout_type in layout_map_category.get(layout_category, []):
@@ -153,6 +162,7 @@ class TestRendersModel(QObject):
         def process_test_render(
             card: tuple[CardDetails, ScryfallCard], template: AssembledTemplate
         ) -> None:
+            """Process test render."""
             render_operations = prepare_render_operations(
                 template,
                 self._template_library,
@@ -167,6 +177,7 @@ class TestRendersModel(QObject):
         async def queue_test_render(
             cards: Sequence[tuple[CardDetails, ScryfallCard]],
         ) -> None:
+            """Queue test render."""
             operations: list[Awaitable[None]] = []
             for card in cards:
                 processed_scryfall_data = process_card_data(card[1], card[0])
@@ -189,6 +200,7 @@ class TestRendersModel(QObject):
     def test_all(
         self, layout: str | None = None, quick: bool = False, case: str | None = None
     ) -> None:
+        """Test all."""
         _logger.info(
             f"Queueing {'quick' if quick else 'all'} test renders{
                 f' for layout {layout}' if layout else ''

@@ -14,6 +14,7 @@ def run():
 
     # Duplicate
     def step1(enabled: bool = True, dialog: bool = False):
+        """Duplicate the background layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -29,6 +30,7 @@ def run():
 
     # Invert
     def step2(enabled: bool = True, dialog: bool = False):
+        """Invert the layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -40,6 +42,7 @@ def run():
 
     # Gaussian Blur
     def step3(enabled: bool = True, dialog: bool = False):
+        """Apply a Gaussian blur."""
         if not enabled:
             return
         dialog_mode = (
@@ -51,6 +54,7 @@ def run():
 
     # Set
     def step4(enabled: bool = True, dialog: bool = False):
+        """Set the layer blend mode."""
         if not enabled:
             return
         dialog_mode = (
@@ -71,6 +75,7 @@ def run():
 
     # Make
     def step5(enabled: bool = True, dialog: bool = False):
+        """Create a new layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -93,6 +98,7 @@ def run():
 
     # Set
     def step6(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -129,6 +135,7 @@ def run():
 
     # Make
     def step7(enabled: bool = True, dialog: bool = False):
+        """Create a new layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -165,6 +172,7 @@ def run():
 
     # Set
     def step8(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -181,6 +189,7 @@ def run():
 
     # Copy Merged
     def step9(enabled: bool = True, dialog: bool = False):
+        """Copy the merged composite."""
         if not enabled:
             return
         dialog_mode = (
@@ -192,6 +201,7 @@ def run():
 
     # Paste
     def step10(enabled: bool = True, dialog: bool = False):
+        """Paste the copied composite."""
         if not enabled:
             return
         dialog_mode = (
@@ -206,6 +216,7 @@ def run():
 
     # Filter Gallery
     def step11(enabled: bool = True, dialog: bool = False):
+        """Apply the Filter Gallery effect."""
         if not enabled:
             return
         dialog_mode = (
@@ -222,6 +233,7 @@ def run():
 
     # Invert
     def step12(enabled: bool = True, dialog: bool = False):
+        """Invert the layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -234,6 +246,7 @@ def run():
     # Blend mode "Multiply"
     # Step 13 and Step 20
     def blend_mode_multiply(enabled: bool = True, dialog: bool = False):
+        """Blend mode multiply."""
         if not enabled:
             return
         dialog_mode = (
@@ -254,6 +267,7 @@ def run():
 
     # Set
     def step14(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -272,6 +286,7 @@ def run():
 
     # Select
     def step15(enabled: bool = True, dialog: bool = False):
+        """Select a region."""
         if not enabled:
             return
         dialog_mode = (
@@ -289,6 +304,7 @@ def run():
 
     # Make
     def step16(enabled: bool = True, dialog: bool = False):
+        """Create a new layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -303,6 +319,7 @@ def run():
 
     # Select
     def step17(enabled: bool = True, dialog: bool = False):
+        """Select a region."""
         if not enabled:
             return
         dialog_mode = (
@@ -320,6 +337,7 @@ def run():
 
     # Fill
     def step18(enabled: bool = True, dialog: bool = False):
+        """Fill the selection."""
         if not enabled:
             return
         dialog_mode = (
@@ -333,6 +351,7 @@ def run():
 
     # Filter Gallery
     def step19(enabled: bool = True, dialog: bool = False):
+        """Apply the Filter Gallery effect."""
         if not enabled:
             return
         dialog_mode = (
@@ -355,6 +374,7 @@ def run():
 
     # Set
     def step21(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -373,6 +393,7 @@ def run():
 
     # Select
     def step22(enabled: bool = True, dialog: bool = False):
+        """Select a region."""
         if not enabled:
             return
         dialog_mode = (
@@ -390,6 +411,7 @@ def run():
 
     # Set
     def step23(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -408,6 +430,7 @@ def run():
 
     # Select
     def step24(enabled: bool = True, dialog: bool = False):
+        """Select a region."""
         if not enabled:
             return
         dialog_mode = (
@@ -425,6 +448,7 @@ def run():
 
     # Duplicate
     def step25(enabled: bool = True, dialog: bool = False):
+        """Duplicate the layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -445,6 +469,7 @@ def run():
 
     # Move
     def step26(enabled: bool = True, dialog: bool = False):
+        """Move the layer."""
         if not enabled:
             return
         dialog_mode = (
@@ -468,6 +493,7 @@ def run():
 
     # Set
     def step27(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -486,6 +512,7 @@ def run():
 
     # Set
     def step28(enabled: bool = True, dialog: bool = False):
+        """Set layer properties."""
         if not enabled:
             return
         dialog_mode = (
@@ -506,6 +533,7 @@ def run():
 
     # Merge Visible
     def step29(enabled: bool = True, dialog: bool = False):
+        """Merge the visible layers."""
         if not enabled:
             return
         dialog_mode = (

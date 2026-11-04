@@ -171,6 +171,7 @@ def get_card_data(
 def get_batch_of_cards(
     batch: Iterable[tuple[CardIdentifier, list[CardDetails]]],
 ) -> list[tuple[CardDetails, ScryfallCard]]:
+    """Return the batch of cards."""
     if result := get_cards_collection([item[0] for item in batch]):
         if result.not_found:
             _logger.warning(
@@ -369,12 +370,14 @@ def process_card_data(data: ScryfallCard, card: CardDetails) -> ScryfallCard:
 
 
 def sanitize_card_filename(name: str) -> str:
+    """Sanitize card filename."""
     for illegal, substitute in _reverse_filename_character_replacements.items():
         name = name.replace(illegal, substitute)
     return sanitize_filename(name)
 
 
 def card_details_to_scryfall_identifier(card: CardDetails) -> CardIdentifier:
+    """Card details to scryfall identifier."""
     if card["set"] and card["number"]:
         return {
             "set": card["set"],
@@ -547,6 +550,7 @@ def strip_reminder_text(text: str) -> str:
 
 
 def human_readable_card_details(details: CardDetails) -> str:
+    """Human readable card details."""
     return f"{details['name']} ({details['artist']}) [{details['set']}] {{{
         details['number']
     }}} |{details['file']}|"

@@ -85,6 +85,7 @@ class SagaMod(NormalTemplate):
 
     @cached_property
     def saga_group(self):
+        """Group containing the Saga banner, icons and text."""
         return psd.getLayerSet(LAYERS.SAGA)
 
     """
@@ -93,25 +94,41 @@ class SagaMod(NormalTemplate):
 
     @property
     def saga_ability_layers(self) -> list[ArtLayer]:
+        """Duplicated text layers, one per Saga chapter."""
         return self._saga_abilities
 
     @saga_ability_layers.setter
     def saga_ability_layers(self, value: list[ArtLayer]):
+        """Set replace the cached Saga ability layers."""
         self._saga_abilities = value
 
     @property
     def saga_icon_layers(self) -> list[list[ArtLayer | LayerSet]]:
+        """Icons duplicated for each Saga chapter."""
         return self._saga_icons
 
     @saga_icon_layers.setter
     def saga_icon_layers(self, value: list[list[ArtLayer | LayerSet]]):
+        """Set replace the cached Saga icon layers."""
         self._saga_icons = value
 
     @cached_property
     def ability_divider_layer(self) -> ArtLayer | None:
+        """Divider layer placed between Saga chapters."""
         return psd.getLayer(LAYERS.DIVIDER, self.saga_group)
 
     def get_saga_stage_icon(self, stage: str) -> ArtLayer | LayerSet:
+        """Duplicate a hidden stage icon and make the copy visible.
+
+        Args:
+            stage: Chapter icon layer name (a Roman numeral or similar).
+
+        Returns:
+            The visible duplicate of the requested stage icon.
+
+        Raises:
+            ValueError: If the template has no icon for ``stage``.
+        """
         if layer := psd.getLayer(stage, self.saga_group):
             icon = layer.duplicate()
             # Stage icons are kept hidden in the template as duplication sources.
@@ -125,10 +142,12 @@ class SagaMod(NormalTemplate):
 
     @cached_property
     def text_layer_ability(self) -> ArtLayer | None:
+        """Template text layer used for Saga chapter text."""
         return psd.getLayer(LAYERS.TEXT, self.saga_group)
 
     @cached_property
     def text_layer_reminder(self) -> ArtLayer | None:
+        """Reminder text layer shown above the chapters."""
         return psd.getLayer(LAYERS.REMINDER_TEXT, self.saga_group)
 
     """
@@ -137,10 +156,12 @@ class SagaMod(NormalTemplate):
 
     @cached_property
     def art_reference(self) -> ReferenceLayer | None:
+        """Art frame reference used to fit the Saga banner."""
         return get_reference_layer(LAYERS.ART_FRAME)
 
     @cached_property
     def reminder_reference(self) -> ReferenceLayer | None:
+        """Reference box for the reminder text."""
         return psd.get_reference_layer("Description Reference", self.saga_group)
 
     """
@@ -300,6 +321,7 @@ class VectorSagaMod(SagaMod, VectorTemplate):
 
     @cached_property
     def saga_banner_masks(self) -> list[ArtLayer]:
+        """Half-banner masks applied while generating banner colors."""
         if layer := psd.getLayer(LAYERS.HALF, [self.mask_group, LAYERS.BANNER]):
             return [layer]
         return []
@@ -310,10 +332,12 @@ class VectorSagaMod(SagaMod, VectorTemplate):
 
     @cached_property
     def saga_banner_group(self) -> LayerSet | None:
+        """Saga banner group."""
         return psd.getLayerSet(LAYERS.BANNER, self.saga_group)
 
     @cached_property
     def saga_stripe_group(self) -> LayerSet | None:
+        """Saga stripe group (middle color band)."""
         return psd.getLayerSet(LAYERS.STRIPE, self.saga_group)
 
     """
@@ -466,10 +490,12 @@ class SagaVectorTemplate(
 
     @cached_property
     def art_reference(self) -> ReferenceLayer | None:
+        """Art frame reference for the vector Saga banner."""
         return get_reference_layer(LAYERS.ART_FRAME + " Right")
 
     @cached_property
     def textbox_reference(self) -> ReferenceLayer | None:
+        """Textbox reference, using the Transform front variant when needed."""
         if self.is_front and self.is_flipside_creature:
             return psd.get_reference_layer(
                 f"{LAYERS.TEXTBOX_REFERENCE} {LAYERS.TRANSFORM_FRONT}", self.saga_group
@@ -482,12 +508,14 @@ class SagaVectorTemplate(
 
     @cached_property
     def textbox_masks(self) -> list[ArtLayer]:
+        """Half-textbox mask used while generating colors."""
         if layer := psd.getLayer(LAYERS.HALF, [self.mask_group, LAYERS.TEXTBOX]):
             return [layer]
         return []
 
     @cached_property
     def background_masks(self) -> list[ArtLayer]:
+        """Half-background mask used while generating colors."""
         if layer := psd.getLayer(LAYERS.HALF, [self.mask_group, LAYERS.BACKGROUND]):
             return [layer]
         return []
@@ -602,6 +630,7 @@ class SagaVectorTemplate(
     """
 
     def enable_transform_layers(self):
+        """Enable the transform icon group."""
         super().enable_transform_layers()
 
         # Must enable Transform Icon group
@@ -615,6 +644,7 @@ class SagaVectorTemplate(
     """
 
     def text_layers_transform_back(self):
+        """Switch the back-face name and type line to white."""
         # Change back face name and typeline to white
         if self.text_layer_name:
             self.text_layer_name.textItem.color = psd.rgb_white()
@@ -630,6 +660,7 @@ class UniversesBeyondSagaTemplate(SagaVectorTemplate):
     # Color Maps
     @cached_property
     def pinlines_color_map(self) -> dict[str, ColorObject]:
+        """Color overrides for the Universes Beyond Saga pinlines."""
         return {
             **pinlines_color_map,
             "W": (246, 247, 241),
@@ -682,6 +713,7 @@ class UniversesBeyondSagaTemplate(SagaVectorTemplate):
     """
 
     def enable_transform_layers(self):
+        """Enable back-face textbox and twins textures."""
         super().enable_transform_layers()
 
         # Switch to darker colors for back side

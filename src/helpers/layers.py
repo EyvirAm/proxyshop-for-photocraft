@@ -176,6 +176,7 @@ def get_reference_layer(
 
 
 def get_layer_document(layer: ArtLayer | LayerSet) -> Document:
+    """Return the layer document."""
     doc = layer
     while not isinstance((doc := doc.parent), Document):
         pass
@@ -613,6 +614,7 @@ def select_no_layers() -> None:
 
 
 class LayerVisibleContext(AbstractContextManager[None]):
+    """Context manager that temporarily changes layer visibility."""
     def __init__(self, layer: ArtLayer | LayerSet) -> None:
         self._layer = layer
         self._initial_visibility: bool
@@ -631,10 +633,12 @@ class LayerVisibleContext(AbstractContextManager[None]):
 
 
 class StrokeDetails(TypedDict):
+    """Fields of ``StrokeDetails``."""
     size: int
 
 
 def get_stroke_details(layer: ArtLayer | LayerSet) -> StrokeDetails | None:
+    """Return the stroke details."""
     with LayerVisibleContext(layer):
         APP.instance.activeDocument.activeLayer = layer
 

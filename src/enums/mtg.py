@@ -38,6 +38,7 @@ class LayoutCategory(StrEnum):
     def matches_layout_type(
         cls, category: LayoutCategory, layout_type: LayoutType
     ) -> bool:
+        """Whether this category matches a layout type."""
         return layout_type in layout_map_category[category]
 
 
@@ -400,6 +401,7 @@ class CardFonts(StrEnum):
 
 class MagicIcons(StrEnum):
     # Proxyglyph font
+    """``MagicIcons`` options."""
     PAINTBRUSH_MODERN = "a"
     PAINTBRUSH_CLASSIC = "ýþ"
     # Gotham-Medium font

@@ -1,8 +1,14 @@
+"""
+* Tests: String Formatting
+
+Format string index tests.
+"""
 from __future__ import annotations
 from src.utils.text import format_string_with_indices
 
 
 class TestFormatStringWithIndices:
+    """Tests for format strings with indexed placeholders."""
     def test_format_string_with_indices(self) -> None:
         """Test basic string formatting with single variables."""
         result, indices = format_string_with_indices(

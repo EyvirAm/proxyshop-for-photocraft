@@ -56,12 +56,14 @@ class ArtLayer(Layer):
 
     @property
     def textItem(self) -> TextItem:
+        """TextItem interface for this layer, created on demand."""
         if self._text_item is None:
             self._text_item = TextItem(parent=self)
         return self._text_item
 
     @textItem.setter
     def textItem(self, value: TextItem) -> None:
+        """Attach a TextItem to this layer."""
         self._text_item = value
         self._text_item.parent = self
 
@@ -170,6 +172,7 @@ class ArtLayer(Layer):
         relativeObject: Any = None,
         insertionLocation: ElementPlacement | None = None,
     ) -> ArtLayer:
+        """Duplicate the layer, optionally relative to another layer."""
         target_parent = (
             relativeObject
             if insertionLocation == ElementPlacement.PlaceInside
@@ -223,6 +226,7 @@ class ArtLayer(Layer):
         return dup
 
     def rasterize(self, target: Any = None) -> None:
+        """Rasterize the layer, converting text to pixels."""
         if self._kind == LayerKind.TextLayer:
             self._exec_photocraft("type.rasterize", {"layer": self._id})
         else:
@@ -230,22 +234,28 @@ class ArtLayer(Layer):
         self._kind = LayerKind.NormalLayer
 
     def merge(self) -> ArtLayer:
+        """Merge the layer down and return the resulting layer."""
         self._exec_photocraft("layer.mergeDown", {"layer": self._id})
         return self
 
     def clear(self) -> None:
+        """Clear the pixels inside the current selection."""
         self._exec_photocraft("edit.clear", {})
 
     def copy(self, merge: bool = False) -> None:
+        """Copy the layer, or the merged composite, to the clipboard."""
         self._exec_photocraft("edit.copyMerged" if merge else "edit.copy", {})
 
     def cut(self) -> None:
+        """Cut the layer to the clipboard."""
         self._exec_photocraft("edit.cut", {})
 
     def invert(self) -> None:
+        """Invert the layer colors."""
         self._exec_photocraft("image.adjustments.invert", {})
 
     def applyGaussianBlur(self, radius: float = 1.0) -> None:
+        """Apply a Gaussian blur with the given radius."""
         self._exec_photocraft("filter.blur.gaussianBlur", {"radius": float(radius)})
 
 
@@ -258,10 +268,12 @@ class ArtLayers:
 
     @property
     def app(self) -> ArtLayers:
+        """The collection itself, mirroring the Photoshop API."""
         return self
 
     @property
     def length(self) -> int:
+        """Number of art layers in the collection."""
         return len(self._items)
 
     def __len__(self) -> int:
@@ -276,6 +288,7 @@ class ArtLayers:
         return self.getByName(key)
 
     def getByName(self, name: str) -> ArtLayer:
+        """Return a layer by name, falling back to a case-insensitive match."""
         for item in self._items:
             if item.name == name:
                 return item
@@ -285,6 +298,7 @@ class ArtLayers:
         raise KeyError(f"ArtLayer '{name}' not found")
 
     def add(self) -> ArtLayer:
+        """Create a new art layer and make it the active layer."""
         doc = getattr(self.parent, "_doc", self.parent)
         new_id = None
         if doc is not None and hasattr(doc, "_exec_photocraft"):
@@ -304,4 +318,5 @@ class ArtLayers:
         return layer
 
     def removeAll(self) -> None:
+        """Remove every layer from the collection."""
         self._items.clear()

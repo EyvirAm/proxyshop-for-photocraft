@@ -172,14 +172,17 @@ class BaseTemplate:
 
     @cached_property
     def render_operation(self) -> RenderOperation:
+        """Render operation that owns this template instance."""
         raise ValueError("Render operation not assigned")
 
     @cached_property
     def file_dialog(self) -> FileDialogModel | None:
+        """File dialog model used to request user input, if any."""
         return None
 
     @cached_property
     def message_dialog(self) -> MessageDialogContentModel | None:
+        """Message dialog model used to show progress or prompts, if any."""
         return None
 
     @cached_property
@@ -509,6 +512,7 @@ class BaseTemplate:
 
     @cached_property
     def collector_group(self) -> LayerSet | None:
+        """Collector info group inside the legal group."""
         return psd.getLayerSet(LAYERS.COLLECTOR, self.legal_group)
 
     @cached_property
@@ -556,10 +560,12 @@ class BaseTemplate:
 
     @cached_property
     def text_layer_collector_first(self) -> ArtLayer | None:
+        """Top collector info text layer."""
         return psd.getLayer(LAYERS.TOP, self.collector_group)
 
     @cached_property
     def text_layer_collector_second(self) -> ArtLayer | None:
+        """Bottom collector info text layer."""
         return psd.getLayer(LAYERS.BOTTOM, self.collector_group)
 
     @cached_property
@@ -1081,6 +1087,7 @@ class BaseTemplate:
         prefix = "_TkJqxrzSveisbe_"
 
         def replace_date(match: Match[str]) -> str:
+            """Replace a ``{date:<format>}`` token with a formatted timestamp."""
             new_id = f"{prefix}{id_counter[0]}"
             id_counter[0] += 1
             values[new_id] = now.strftime(match.group(1))
@@ -1413,6 +1420,7 @@ class BaseTemplate:
         return True
 
     def format_exception_message(self, message: str) -> str:
+        """Format a render error message with the card's display name."""
         return f"An exception occurred while rendering <b>{self.layout.display_name}</b>: {message}"
 
     """
@@ -1640,6 +1648,7 @@ class BaseTemplate:
     """
 
     def cancel(self) -> None:
+        """Signal the render thread to stop at the next cancellation check."""
         self.event.set()
 
     @staticmethod
@@ -1728,6 +1737,18 @@ class BaseTemplate:
         manual_edit_title: str | None = None,
         manual_edit_message: str | None = None,
     ) -> bool:
+        """Pause the render for user input or a manual editing session.
+
+        Args:
+            message: Message shown to the user, or None for no prompt.
+            show_photoshop: Bring PhotoCraft to the foreground while paused.
+            manual_edit: Open a temporary PSD for manual editing before resuming.
+            manual_edit_title: Optional title for the manual editing window.
+            manual_edit_message: Optional explanation for the manual editing step.
+
+        Returns:
+            True when the render should continue, False when it was cancelled.
+        """
         manual_edit_active = False
         if manual_edit and not self.render_operation.do_not_pause:
             if not self._start_manual_edit(
@@ -1758,6 +1779,7 @@ class BaseTemplate:
         manual_edit_title: str | None = None,
         manual_edit_message: str | None = None,
     ) -> bool:
+        """Async variant of :meth:`pause` used by the render queue."""
         manual_edit_active = False
         if manual_edit and not self.render_operation.do_not_pause:
             if not self._start_manual_edit(

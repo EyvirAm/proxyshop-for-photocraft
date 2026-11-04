@@ -34,6 +34,7 @@ class ExtendedMod(BaseTemplate):
 
     @cached_property
     def is_content_aware_enabled(self) -> bool:
+        """Extended art fills its outer edge with content-aware fill."""
         return True
 
 
@@ -49,6 +50,7 @@ class FullartMod(BaseTemplate):
 
     @cached_property
     def is_fullart(self) -> bool:
+        """Full-art templates are always fullart."""
         return True
 
 
@@ -66,10 +68,12 @@ class BorderlessMod(BaseTemplate):
 
     @cached_property
     def is_fullart(self) -> bool:
+        """Borderless templates are always fullart."""
         return True
 
     @cached_property
     def is_content_aware_enabled(self) -> bool:
+        """Borderless art is filled with content-aware fill."""
         return True
 
     """
@@ -350,6 +354,7 @@ class NicknameMod(BaseTemplate):
     """
 
     def format_nickname_text(self) -> None:
+        """Center the card name on the nickname plate."""
         # Center the card name on the nickname plate
         psd.align_all(self.text_layer_nickname, self.nickname_shape)
 

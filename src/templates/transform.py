@@ -208,10 +208,12 @@ class IxalanMod(NormalTemplate):
 
     @cached_property
     def is_creature(self) -> bool:
+        """Ixalan back faces are lands, never creatures."""
         return False
 
     @cached_property
     def is_name_shifted(self) -> bool:
+        """Back faces have no transform icon, so the name is not shifted."""
         return False
 
     """

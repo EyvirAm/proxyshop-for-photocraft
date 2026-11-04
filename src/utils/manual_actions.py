@@ -1,3 +1,8 @@
+"""
+* Utils: Manual Actions
+
+Pause to let the user edit a model in an external editor.
+"""
 from __future__ import annotations
 import subprocess
 from os import unlink

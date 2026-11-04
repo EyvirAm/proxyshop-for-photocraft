@@ -1,3 +1,8 @@
+"""
+* Utils: Tests
+
+Helpers for the template render test suite.
+"""
 from __future__ import annotations
 from pydantic import RootModel
 
@@ -14,6 +19,7 @@ TestCards = RootModel[dict[LayoutType, dict[str, str]]]
 
 
 def get_template_render_test_cases() -> dict[LayoutType, dict[str, str]]:
+    """Return the predefined render test cases."""
     return parse_model(PATH.SRC_DATA_TEMPLATE_RENDER_TEST_CASES, TestCards).root
 
 

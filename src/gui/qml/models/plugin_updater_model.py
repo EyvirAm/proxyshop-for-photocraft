@@ -1,3 +1,8 @@
+"""
+* GUI: Plugin Updater Model
+
+QML model for installing and updating plugins.
+"""
 from __future__ import annotations
 import shutil
 import subprocess
@@ -42,11 +47,13 @@ _logger = getLogger(__name__)
 
 
 class PluginSourceType(Enum):
+    """``PluginSourceType`` options."""
     GIT = 1
     GITHUB = 2
 
 
 class PluginItem(BaseModel):
+    """``PluginItem`` model."""
     id: str
     name: str
     author: str = ""
@@ -65,6 +72,7 @@ class PluginItem(BaseModel):
     @computed_field
     @property
     def installed(self) -> bool:
+        """Whether the plugin is installed."""
         return bool(self.handler)
 
     model_config = {"arbitrary_types_allowed": True}
@@ -80,6 +88,7 @@ _plugin_versions_lock = Lock()
 
 
 class PluginUpdaterModel(PydanticQListModel[PluginItem]):
+    """QML model for installing and updating plugins."""
     item_model = PluginItem
 
     def __init__(
@@ -136,16 +145,19 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
 
     @Property(bool, notify=_fetching_data_changed)
     def fetching_data(self) -> bool:  # pyright: ignore[reportRedeclaration]
+        """Whether a metadata refresh is running."""
         return self._fetching_data
 
     @fetching_data.setter
     def fetching_data(self, value: bool) -> None:
+        """Set whether a metadata refresh is running."""
         if value != self._fetching_data:
             self._fetching_data = value
             self._fetching_data_changed.emit()
 
     @Slot()
     def fetch_data(self) -> None:
+        """Fetch data."""
         ensure_future(to_thread(self.handle_fetch_data))
 
     def _create_plugin_item(
@@ -176,6 +188,7 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
     _update_available = Signal(name="updateAvailable")
 
     def handle_fetch_data(self) -> bool:
+        """Handle fetch data."""
         if not _data_fetch_lock.acquire(False):
             return False
 
@@ -441,6 +454,7 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
 
     @Slot(int)
     def download_plugin(self, index: int) -> None:
+        """Download plugin."""
         if index < 0 or index >= self.rowCount():
             return
         ensure_future(to_thread(self._handle_download_plugin, index))
@@ -488,6 +502,7 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
 
     @Slot(str)
     def add_plugin(self, url: str) -> None:
+        """Add plugin."""
         ensure_future(to_thread(self._handle_add_plugin, url))
 
     def _check_existing_plugin_definition(
@@ -605,6 +620,7 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
 
     @Slot(int)
     def remove_plugin(self, index: int) -> None:
+        """Remove plugin."""
         if index < 0 or index >= self.rowCount():
             return
 
@@ -631,6 +647,7 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
 
     @Slot(int)
     def remove_added_plugin(self, index: int) -> None:
+        """Remove added plugin."""
         if index < 0 or index >= self.rowCount():
             return
 
@@ -653,6 +670,7 @@ class PluginUpdaterModel(PydanticQListModel[PluginItem]):
 
     @Slot()
     def save_versions(self) -> None:
+        """Save versions."""
         versions = self._plugin_versions
         with _plugin_versions_lock:
             dump_model(PATH.SRC_DATA_PLUGIN_VERSIONS, PluginVersionsModel(versions))

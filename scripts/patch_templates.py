@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Add the missing Planeswalker Transform front ``convertdfc`` icon.
 
-The downloaded ``pw-tf-front.psd`` and ``pw-tf-front-extended.psd`` templates
-do not contain the hidden ``convertdfc`` layer that ``PlaneswalkerTFTemplate``
-expects for cards using the generic transform icon (for example Arlinn Kord,
-INR #230).  This script adds it using the upward white triangle from
-``tf-front.psd``.
+Unpatched ``pw-tf-front.psd`` and ``pw-tf-front-extended.psd`` bundles do not
+contain the hidden ``convertdfc`` layer that ``PlaneswalkerTFTemplate`` expects
+for cards using the generic transform icon (for example Arlinn Kord, INR
+#230). This script adds it using the upward white triangle from
+``tf-front.psd``. Re-run it after updating the template bundle; the copies in
+the shared Drive folder already include the layer.
 
 The script is idempotent: templates that already have the layer are skipped.
 A ``<name>.psd.bak`` backup is created before a template is modified.
@@ -145,6 +146,7 @@ def patch_target(path: Path, icon: Any) -> bool:
 
 
 def main() -> int:
+    """Patch or verify the target templates and return a process exit code."""
     repo_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

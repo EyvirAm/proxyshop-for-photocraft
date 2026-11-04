@@ -32,12 +32,15 @@ REG_FONT_VER: re.Pattern[str] = re.compile(r"\b(\d+\.\d+)\b")
 
 
 class FontCache:
+    """Cache of installed font files and availability checks."""
     @cached_property
     def user_fonts_dir(self) -> Path:
+        """User fonts dir."""
         return Path.home() / "AppData/Local/Microsoft/Windows/Fonts"
 
     @cached_property
     def user_font_files(self) -> list[Path]:
+        """User font files."""
         return [path for path in self.user_fonts_dir.iterdir() if path.is_file()]
 
 
@@ -128,6 +131,7 @@ def unregister_font(ps_app: PhotoshopHandler, font_path: str) -> bool:
 def is_font_available_in_ps(
     ps_app: PhotoshopHandler, font_post_script_name: str
 ) -> bool:
+    """Whether font available in ps."""
     try:
         return bool(ps_app.fonts[font_post_script_name])
     except (COMError, KeyError):
@@ -151,6 +155,7 @@ def get_ps_font_dict(ps_app: PhotoshopHandler) -> dict[str, str]:
 
 
 class FontInfo(TypedDict):
+    """Fields of ``FontInfo``."""
     name: str | None
     count: int
 

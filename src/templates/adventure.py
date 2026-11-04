@@ -78,6 +78,7 @@ class AdventureMod(NormalTemplate):
 
     @cached_property
     def textbox_reference_adventure(self) -> ArtLayer | None:
+        """Textbox reference for the adventure side."""
         return psd.get_reference_layer(
             LAYERS.TEXTBOX_REFERENCE_ADVENTURE, self.text_group
         )
@@ -87,6 +88,7 @@ class AdventureMod(NormalTemplate):
     """
 
     def text_layers_adventure(self):
+        """Add mana, name, rules and flavor text for the adventure side."""
         if isinstance(self.layout, AdventureLayout):
             # Add adventure text layers
 
@@ -314,6 +316,7 @@ class AdventureVectorMod(AdventureMod, VectorTemplate):
 
     @cached_property
     def textbox_masks(self) -> list[ArtLayer]:
+        """Half-textbox mask used to blend the adventure textbox."""
         if layer := psd.getLayer(LAYERS.HALF, [LAYERS.MASKS, LAYERS.RIGHT]):
             return [layer]
         return []
@@ -384,10 +387,12 @@ class AdventureVectorTemplate(AdventureVectorMod, VectorTemplate):
 
     @cached_property
     def crown_group(self) -> LayerSet | None:
+        """Legendary crown group."""
         return psd.getLayerSet(LAYERS.LEGENDARY_CROWN, LAYERS.LEGENDARY_CROWN)
 
     @cached_property
     def pinlines_group(self) -> LayerSet | None:
+        """Pinlines group."""
         return psd.getLayerSet(LAYERS.PINLINES, LAYERS.PINLINES)
 
     """
@@ -396,16 +401,19 @@ class AdventureVectorTemplate(AdventureVectorMod, VectorTemplate):
 
     @cached_property
     def pinlines_legendary_shape(self) -> ArtLayer | None:
+        """Legendary pinlines shape, when the card is legendary."""
         if self.is_legendary:
             return psd.getLayer(LAYERS.LEGENDARY, [self.pinlines_group, LAYERS.SHAPE])
         return
 
     @cached_property
     def pt_shape(self) -> ArtLayer | None:
+        """Power/toughness box shape for creatures."""
         if self.is_creature:
             return psd.getLayer(LAYERS.SHAPE, LAYERS.PT_BOX)
         return
 
     @cached_property
     def enabled_shapes(self) -> list[ArtLayer | LayerSet | None]:
+        """Shapes used by the adventure vector frame."""
         return [self.border_shape, self.pinlines_legendary_shape, self.pt_shape]

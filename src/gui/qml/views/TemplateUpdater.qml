@@ -1,3 +1,5 @@
+// Template updater view.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQml

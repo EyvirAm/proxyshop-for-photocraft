@@ -1,3 +1,8 @@
+"""
+* GUI: Render Operations Model
+
+QML model for queued render operations.
+"""
 from __future__ import annotations
 from functools import cached_property
 
@@ -11,6 +16,7 @@ from src.render.setup import PausedEventArgs, RenderOperation
 
 
 class RenderOperationDetails(BaseModel):
+    """``RenderOperationDetails`` model."""
     image_name: str
     image_path: str
     card_name: str
@@ -22,10 +28,12 @@ class RenderOperationDetails(BaseModel):
 
     @cached_property
     def render_operation(self) -> RenderOperation:
+        """Render operation."""
         raise ValueError("Render operation not set")
 
 
 class RenderOperationsModel(PydanticQListModel[RenderOperationDetails]):
+    """QML model for queued render operations."""
     item_model = RenderOperationDetails
 
     def __init__(
@@ -88,10 +96,12 @@ class RenderOperationsModel(PydanticQListModel[RenderOperationDetails]):
 
     @Slot(int)
     def dequeue(self, index: int) -> None:
+        """Remove and return the operation at ``index``."""
         self._render_queue.dequeue(index)
 
     @Slot()
     def clear(self) -> None:
+        """Remove every queued operation."""
         self._render_queue.clear()
 
     # endregion Queue
@@ -102,10 +112,12 @@ class RenderOperationsModel(PydanticQListModel[RenderOperationDetails]):
 
     @Property(bool, notify=_is_rendering_changed)
     def is_rendering(self) -> bool:  # pyright: ignore[reportRedeclaration]
+        """Whether a render is in progress."""
         return self._is_rendering
 
     @is_rendering.setter
     def is_rendering(self, value: bool) -> None:
+        """Set whether a render is in progress."""
         if value != self._is_rendering:
             self._is_rendering = value
             self._is_rendering_changed.emit()
@@ -114,58 +126,68 @@ class RenderOperationsModel(PydanticQListModel[RenderOperationDetails]):
 
     @property
     def active_operation(self) -> RenderOperationDetails | None:
+        """Operation currently being rendered, if any."""
         return self._active_operation
 
     @active_operation.setter
     def active_operation(self, value: RenderOperationDetails | None) -> None:
+        """Set operation currently being rendered, if any."""
         if self._active_operation != value:
             self._active_operation = value
             self._active_operation_changed.emit()
 
     @Property(str, notify=_active_operation_changed)
     def rendering_image_name(self) -> str:
+        """Rendering image name."""
         if self._active_operation:
             return self._active_operation.image_name
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_image_path(self) -> str:
+        """Rendering image path."""
         if self._active_operation:
             return self._active_operation.image_path
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_card_name(self) -> str:
+        """Rendering card name."""
         if self._active_operation:
             return self._active_operation.card_name
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_card_artist(self) -> str:
+        """Rendering card artist."""
         if self._active_operation:
             return self._active_operation.card_artist
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_card_set(self) -> str:
+        """Rendering card set."""
         if self._active_operation:
             return self._active_operation.card_set
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_card_collector_number(self) -> str:
+        """Rendering card collector number."""
         if self._active_operation:
             return self._active_operation.card_collector_number
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_layout_name(self) -> str:
+        """Rendering layout name."""
         if self._active_operation:
             return self._active_operation.layout_name
         return ""
 
     @Property(str, notify=_active_operation_changed)
     def rendering_class_name(self) -> str:
+        """Rendering class name."""
         if self._active_operation:
             return self._active_operation.class_name
         return ""
@@ -179,11 +201,13 @@ class RenderOperationsModel(PydanticQListModel[RenderOperationDetails]):
 
     @Slot()
     def cancel(self) -> None:
+        """Cancel the active render."""
         self._render_message_dialog_model.dismiss()
         self._cancel_queue()
 
     @Slot()
     def resume(self) -> None:
+        """Resume the active render."""
         if op := self._render_queue.active_operation:
             op.resume()
         else:

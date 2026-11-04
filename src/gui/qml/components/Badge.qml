@@ -1,3 +1,5 @@
+// Small rounded badge used for status and count labels.
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts

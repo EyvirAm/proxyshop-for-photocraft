@@ -1,3 +1,5 @@
+// Themed tab button.
+
 import QtQuick
 import QtQuick.Controls
 

@@ -1,3 +1,8 @@
+"""
+* Utils: Git
+
+Small wrappers around the git command line.
+"""
 from __future__ import annotations
 from logging import getLogger
 from subprocess import DEVNULL, CalledProcessError, check_output, run
@@ -6,6 +11,7 @@ _logger = getLogger(__name__)
 
 
 def is_git_available() -> bool:
+    """Whether the git executable is available."""
     try:
         run(("git", "--version"), stdout=DEVNULL, check=True)
         return True
@@ -14,6 +20,7 @@ def is_git_available() -> bool:
 
 
 def get_latest_remote_git_commit_hash(repo_url: str) -> str | None:
+    """Return the latest commit hash of a remote repository."""
     try:
         output = check_output(
             ["git", "ls-remote", repo_url, "HEAD"],

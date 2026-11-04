@@ -33,6 +33,7 @@ class SketchTemplate(NormalTemplate):
 
     @cached_property
     def art_action(self) -> Callable[[], None] | None:
+        """Art post-processing action configured for this template, if any."""
         action = self.config.get_setting(
             section="ACTION", key="Sketch.Action", default="Advanced Sketch"
         )
@@ -68,14 +69,17 @@ class KaldheimTemplate(NormalTemplate):
     # Static Properties
     @cached_property
     def is_legendary(self) -> bool:
+        """Whether the card is legendary."""
         return False
 
     @cached_property
     def background_layer(self) -> ArtLayer | None:
+        """Background layer."""
         return None
 
     @cached_property
     def twins_layer(self) -> ArtLayer | None:
+        """Twins layer."""
         return None
 
     """
@@ -85,6 +89,7 @@ class KaldheimTemplate(NormalTemplate):
     @cached_property
     def pt_layer(self) -> ArtLayer | None:
         # Enable vehicle support
+        """Power/toughness layer, including the Vehicle variant."""
         if "Vehicle" in self.layout.type_line:
             return psd.getLayer("Vehicle", LAYERS.PT_BOX)
         return psd.getLayer(self.twins, LAYERS.PT_BOX)
@@ -92,6 +97,7 @@ class KaldheimTemplate(NormalTemplate):
     @cached_property
     def pinlines_layer(self) -> ArtLayer | None:
         # Enable vehicle support
+        """Pinlines layer, including Vehicle and back-face variants."""
         if self.is_land:
             return psd.getLayer(self.pinlines, LAYERS.LAND_PINLINES_TEXTBOX)
         if "Vehicle" in self.layout.type_line:
@@ -111,6 +117,7 @@ class CrimsonFangTemplate(TransformMod, NormalTemplate):
     # Static Properties
     @cached_property
     def is_flipside_creature(self) -> bool:
+        """Whether the front face has a flipside creature side."""
         return False
 
     """
@@ -120,6 +127,7 @@ class CrimsonFangTemplate(TransformMod, NormalTemplate):
     @cached_property
     def background(self) -> str:
         # Use pinlines colors for background
+        """Background texture identity."""
         return self.pinlines
 
     """
@@ -129,6 +137,7 @@ class CrimsonFangTemplate(TransformMod, NormalTemplate):
     @cached_property
     def pinlines_layer(self) -> ArtLayer | None:
         # Support backside colors
+        """Pinlines layer, including Vehicle and back-face variants."""
         if self.is_land:
             return psd.getLayer(self.pinlines, LAYERS.LAND_PINLINES_TEXTBOX)
         if self.is_transform and not self.is_front:
@@ -137,12 +146,14 @@ class CrimsonFangTemplate(TransformMod, NormalTemplate):
 
     def enable_transform_layers(self):
         # Enable circle backing
+        """Enable transform layers."""
         if layer := psd.getLayerSet(LAYERS.TRANSFORM, self.text_group):
             layer.visible = True
         super().enable_transform_layers()
 
     def text_layers_transform(self) -> None:
         # No text layer changes
+        """Text layers transform."""
         pass
 
 
@@ -154,10 +165,12 @@ class PhyrexianTemplate(NormalTemplate):
     # Static Properties
     @cached_property
     def background_layer(self) -> ArtLayer | None:
+        """Background layer."""
         return None
 
     @cached_property
     def twins_layer(self) -> ArtLayer | None:
+        """Twins layer."""
         return None
 
 
@@ -173,10 +186,12 @@ class DoubleFeatureTemplate(NormalTemplate):
     # Static Properties
     @cached_property
     def pinlines_layer(self) -> ArtLayer | None:
+        """Pinlines layer, including Vehicle and back-face variants."""
         return None
 
     @cached_property
     def twins_layer(self) -> ArtLayer | None:
+        """Twins layer."""
         return None
 
     """
@@ -185,6 +200,7 @@ class DoubleFeatureTemplate(NormalTemplate):
 
     @cached_property
     def background_layer(self) -> ArtLayer | None:
+        """Background layer."""
         return psd.getLayer(self.pinlines, LAYERS.BACKGROUND)
 
 
@@ -205,10 +221,12 @@ class ColorshiftedTemplate(NormalTemplate):
     # Static Properties
     @cached_property
     def is_land(self) -> bool:
+        """Whether the card is a land."""
         return False
 
     @cached_property
     def is_colorless(self) -> bool:
+        """Whether the card is colorless."""
         return False
 
     """
@@ -217,6 +235,7 @@ class ColorshiftedTemplate(NormalTemplate):
 
     @cached_property
     def twins_layer(self) -> ArtLayer | None:
+        """Twins layer."""
         if "Artifact" in self.layout.type_line and self.pinlines != "Artifact":
             if self.is_legendary:
                 return psd.getLayer("Legendary Artifact", "Twins")
@@ -229,6 +248,7 @@ class ColorshiftedTemplate(NormalTemplate):
 
     @cached_property
     def pt_layer(self) -> ArtLayer | None:
+        """Power/toughness layer, including the Vehicle variant."""
         if self.is_creature:
             # Check if vehicle
             if "Vehicle" in self.layout.type_line:
@@ -241,6 +261,7 @@ class ColorshiftedTemplate(NormalTemplate):
 
     def collector_info(self):
         # Artist and set layer
+        """Populate the collector info text."""
         artist_layer = psd.getLayer(LAYERS.ARTIST, self.legal_group)
         if artist_layer:
             psd.replace_text(artist_layer, "Artist", self.layout.artist)
@@ -271,5 +292,6 @@ class BasicLandDarkMode(ExtendedMod, NormalTemplate):
 
     def collector_info(self):
         # Collector info only has artist
+        """Populate the collector info text."""
         if layer := psd.getLayer(LAYERS.ARTIST, self.legal_group):
             layer.textItem.contents = self.layout.artist

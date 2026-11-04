@@ -1,3 +1,5 @@
+// Message dialog backed by MessageDialogContentModel.
+
 import QtQml
 import QtQuick.Controls
 import QtQuick.Dialogs

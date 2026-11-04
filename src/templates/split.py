@@ -49,6 +49,7 @@ class SplitMod(BaseTemplate):
 
     @cached_property
     def fuse_gradient_locations(self) -> dict[int, list[int | float]]:
+        """Gradient stops used for Fuse cards."""
         return {
             **CON.gradient_locations,
             2: [0.50, 0.54],
@@ -58,6 +59,7 @@ class SplitMod(BaseTemplate):
 
     @cached_property
     def pinline_gradient_locations(self) -> list[dict[int, list[int | float]]]:
+        """Gradient stops for the left and right pinlines."""
         return [
             {**CON.gradient_locations, 2: [0.28, 0.33]},
             {**CON.gradient_locations, 2: [0.71, 0.76]},
@@ -81,6 +83,7 @@ class SplitMod(BaseTemplate):
 
     @cached_property
     def is_split(self) -> bool:
+        """Whether the current layout is a Split layout."""
         return isinstance(self.layout, SplitLayout)
 
     @cached_property
@@ -115,6 +118,7 @@ class SplitMod(BaseTemplate):
 
     @cached_property
     def frame_layer_methods(self) -> list[Callable[[], None]]:
+        """Add the split frame layer step."""
         methods = super().frame_layer_methods
         if self.is_split:
             methods.append(self.frame_layers_split)
@@ -239,6 +243,7 @@ class SplitMod(BaseTemplate):
 
     @cached_property
     def expansion_reference(self) -> ArtLayer | None:
+        """Expansion symbol reference for the relevant half."""
         if self.is_split:
             return self.expansion_references[-1 if self.has_unified_typeline else 0]
         return super().expansion_reference
@@ -322,6 +327,7 @@ class SplitMod(BaseTemplate):
     # region Expansion Symbol
 
     def load_expansion_symbol(self) -> None:
+        """Load the expansion symbol and duplicate it for each half."""
         super().load_expansion_symbol()
         if self.is_split:
             _ = self.expansion_symbols
@@ -357,6 +363,7 @@ class SplitMod(BaseTemplate):
         art_layer: ArtLayer | None = None,
         art_reference: ReferenceLayer | None = None,
     ) -> None:
+        """Load one half's art or delegate to multi-art loading."""
         if not self.is_fullart and self.is_split:
             return self.load_artworks([art_file] if art_file else None)
         else:

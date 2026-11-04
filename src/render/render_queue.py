@@ -1,3 +1,8 @@
+"""
+* Render: Queue
+
+Tracks queued render operations, their results and cancellation.
+"""
 from __future__ import annotations
 from _ctypes import COMError
 from asyncio import Future, Task
@@ -14,11 +19,13 @@ _logger = getLogger(__name__)
 
 
 class RenderResult(TypedDict):
+    """Fields of ``RenderResult``."""
     operation: RenderOperation
     result: bool
 
 
 class QueuedOperation(TypedDict):
+    """Fields of ``QueuedOperation``."""
     operation: RenderOperation
     index: int
 
@@ -45,9 +52,11 @@ class RenderQueue:
 
     @property
     def active_operation(self) -> RenderOperation | None:
+        """Operation currently being rendered, if any."""
         return self._active_operation
 
     def enqueue(self, operation: RenderOperation) -> None:
+        """Add an operation to the render queue."""
         with self._queue_lock:
             # Order renders so that that the template document has to be switched
             # as few times as possible
@@ -77,6 +86,7 @@ class RenderQueue:
         self.execute_render()
 
     def dequeue(self, index: int) -> RenderOperation | None:
+        """Remove and return the operation at ``index``."""
         try:
             with self._queue_lock:
                 self.dequeued.trigger((self._queue.pop(index), index))
@@ -84,21 +94,25 @@ class RenderQueue:
             return
 
     def clear(self) -> None:
+        """Remove every queued operation."""
         with self._queue_lock:
             for idx in reversed(range(len(self._queue))):
                 self.dequeued.trigger((self._queue.pop(), idx))
 
     def cancel(self) -> None:
+        """Cancel the active render."""
         if self._active_operation:
             self._cancel = True
             self._active_operation.cancel()
             self.cancelled.trigger(None)
 
     def execute_render(self) -> None:
+        """Execute render."""
         if self._render_lock.locked():
             return
 
         async def loop_render():
+            """Loop render."""
             locked = self._render_lock.acquire(blocking=False)
             if locked:
                 try:
@@ -159,7 +173,9 @@ class RenderQueue:
 def cancel_with_render[T](
     task: Future[T] | Task[T], queue: RenderQueue, msg: str | None = None
 ) -> None:
+    """Cancel with render."""
     def on_cancel(_: None = None) -> None:
+        """On cancel."""
         task.cancel()
 
     queue.cancelled.listen_once(on_cancel)

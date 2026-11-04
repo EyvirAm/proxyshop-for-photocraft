@@ -1,3 +1,8 @@
+"""
+* GUI: Batch Rendering Model
+
+QML model for the batch rendering view.
+"""
 from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from collections.abc import Iterable, Sequence
@@ -32,6 +37,7 @@ _logger = getLogger(__name__)
 
 
 class TemplateOption(BaseModel):
+    """``TemplateOption`` model."""
     name: str
     plugin: str
     plugin_id: str
@@ -40,10 +46,12 @@ class TemplateOption(BaseModel):
 
     @cached_property
     def full_name(self) -> str:
+        """Display name combining set and collector info."""
         return self.name + (f" ({self.plugin})" if self.plugin else "")
 
 
 class LayoutCategoryItem(BaseModel):
+    """``LayoutCategoryItem`` model."""
     name: str
     options_details: list[TemplateOption]
     options: list[str]
@@ -57,6 +65,7 @@ class _TemplateSelectionPreferences(RootModel[dict[str, str]]):
 
 
 class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
+    """QML model for the batch rendering view."""
     item_model = LayoutCategoryItem
 
     def __init__(
@@ -168,10 +177,12 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
 
     @override
     def columnCount(self, parent: QModelIndex | QPersistentModelIndex) -> int:
+        """Column count."""
         return 2
 
     @property
     def template_choices(self) -> dict[LayoutCategory, AssembledTemplate]:
+        """Template choices."""
         template_choices: dict[LayoutCategory, AssembledTemplate] = {}
         for item in self.items:
             if item.selected < 0:
@@ -198,12 +209,14 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
     def select_template_for_layout(
         self, layout_category_idx: int, selected_index: int
     ) -> None:
+        """Select template for layout."""
         item = self.items[layout_category_idx]
         item.selected = selected_index
         q_idx = self.createIndex(layout_category_idx, 0)
         self.dataChanged.emit(q_idx, q_idx, [self.get_role("selected")])
 
     async def render_files(self, paths: list[Path]) -> None:
+        """Render files."""
         if paths:
             _logger.info(
                 f"Queueing {
@@ -214,6 +227,7 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
             def add_render(
                 input: CardDetails | tuple[CardDetails, ScryfallCard],
             ) -> None:
+                """Add render."""
                 if render_operations := prepare_render_operations(
                     self.template_choices,
                     self._template_library,
@@ -224,14 +238,17 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
                     self._render_queue.enqueue(render_operations[0])
 
             async def add_renders(cards: Sequence[tuple[CardDetails, ScryfallCard]]):
+                """Add renders."""
                 await gather(*[to_thread(add_render, card) for card in cards])
 
             await get_cards_from_inputs(paths, add_renders, self._app_config)
 
     @Slot()
     def render_selections(self) -> None:
+        """Render selections."""
         async def action():
             # Choose images
+            """Open the file picker and queue the selected files."""
             selections = await self._file_dialog_model.select_images(
                 dialog_id="batch_mode_render",
                 filters=[
@@ -246,6 +263,7 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
 
     @Slot("QVariantList")
     def render_targets(self, urls: list[QUrl]) -> None:
+        """Render targets."""
         paths: list[Path] | None = None
         try:
             paths = [Path(url2pathname(url.path())) for url in urls]
@@ -261,7 +279,9 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
     def test_render(
         self, layout: str | None = None, quick: bool = False, case: str | None = None
     ) -> None:
+        """Queue the selected test renders."""
         async def action() -> None:
+            """Resolve the chosen layout and queue its test render."""
             layout_category = LayoutCategory(layout) if layout else None
 
             if layout_category and not (
@@ -302,6 +322,7 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
 
     @Slot(result=str)
     def get_template_selections_json(self) -> str:
+        """Return the template selections json."""
         selections = _TemplateSelectionPreferences()
         for item in self.items:
             if item.selected > -1:
@@ -310,6 +331,7 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
 
     @Slot(str)
     def restore_template_selections(self, data: str) -> None:
+        """Restore template selections."""
         try:
             parsed_data = _TemplateSelectionPreferences.model_validate_json(data).root
             for item_idx, item in enumerate(self.items):
@@ -324,6 +346,7 @@ class BatchRenderingModel(PydanticQListModel[LayoutCategoryItem]):
 
     @Slot(result="QVariantList")
     def layout_names(self) -> list[str]:
+        """Layout names."""
         return [item.name for item in self.items]
 
     def _on_template_installed(

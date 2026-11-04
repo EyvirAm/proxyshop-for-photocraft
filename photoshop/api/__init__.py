@@ -76,40 +76,48 @@ class RGBColor:
 
     @property
     def red(self) -> float:
+        """Red channel value (0-255)."""
         return self._red
 
     @red.setter
     def red(self, val: float) -> None:
+        """Set the red channel value."""
         self._red = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.RGBModel, RGBColor)
 
     @property
     def green(self) -> float:
+        """Green channel value (0-255)."""
         return self._green
 
     @green.setter
     def green(self, val: float) -> None:
+        """Set the green channel value."""
         self._green = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.RGBModel, RGBColor)
 
     @property
     def blue(self) -> float:
+        """Blue channel value (0-255)."""
         return self._blue
 
     @blue.setter
     def blue(self, val: float) -> None:
+        """Set the blue channel value."""
         self._blue = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.RGBModel, RGBColor)
 
     @property
     def hexValue(self) -> str:
+        """Color as a hex string."""
         return f"{int(round(self._red)):02X}{int(round(self._green)):02X}{int(round(self._blue)):02X}"
 
     @hexValue.setter
     def hexValue(self, value: str) -> None:
+        """Set the color from a hex string."""
         h = str(value).lstrip("#")
         if len(h) == 3:
             h = "".join(c * 2 for c in h)
@@ -140,40 +148,48 @@ class CMYKColor:
 
     @property
     def cyan(self) -> float:
+        """Cyan channel value (0-100)."""
         return self._cyan
 
     @cyan.setter
     def cyan(self, val: float) -> None:
+        """Set the cyan channel value."""
         self._cyan = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.CMYKModel, CMYKColor)
 
     @property
     def magenta(self) -> float:
+        """Magenta channel value (0-100)."""
         return self._magenta
 
     @magenta.setter
     def magenta(self, val: float) -> None:
+        """Set the magenta channel value."""
         self._magenta = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.CMYKModel, CMYKColor)
 
     @property
     def yellow(self) -> float:
+        """Yellow channel value (0-100)."""
         return self._yellow
 
     @yellow.setter
     def yellow(self, val: float) -> None:
+        """Set the yellow channel value."""
         self._yellow = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.CMYKModel, CMYKColor)
 
     @property
     def black(self) -> float:
+        """Black channel value (0-100)."""
         return self._black
 
     @black.setter
     def black(self, val: float) -> None:
+        """Set the black channel value."""
         self._black = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.CMYKModel, CMYKColor)
@@ -192,30 +208,36 @@ class HSBColor:
 
     @property
     def hue(self) -> float:
+        """Hue angle in degrees."""
         return self._hue
 
     @hue.setter
     def hue(self, val: float) -> None:
+        """Set the hue angle."""
         self._hue = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.HSBModel, HSBColor)
 
     @property
     def saturation(self) -> float:
+        """Saturation percentage."""
         return self._saturation
 
     @saturation.setter
     def saturation(self, val: float) -> None:
+        """Set the saturation."""
         self._saturation = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.HSBModel, HSBColor)
 
     @property
     def brightness(self) -> float:
+        """Brightness percentage."""
         return self._brightness
 
     @brightness.setter
     def brightness(self, val: float) -> None:
+        """Set the brightness."""
         self._brightness = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.HSBModel, HSBColor)
@@ -232,30 +254,36 @@ class LabColor:
 
     @property
     def L(self) -> float:
+        """Lab lightness value."""
         return self._L
 
     @L.setter
     def L(self, val: float) -> None:
+        """Set the Lab lightness."""
         self._L = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.LabModel, LabColor)
 
     @property
     def A(self) -> float:
+        """Lab a-axis value."""
         return self._A
 
     @A.setter
     def A(self, val: float) -> None:
+        """Set the Lab a-axis value."""
         self._A = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.LabModel, LabColor)
 
     @property
     def B(self) -> float:
+        """Lab b-axis value."""
         return self._B
 
     @B.setter
     def B(self, val: float) -> None:
+        """Set the Lab b-axis value."""
         self._B = float(val)
         if self._owner is not None:
             self._owner._model = _DualColorModel(ColorModel.LabModel, LabColor)
@@ -284,10 +312,12 @@ class SolidColor:
 
     @property
     def model(self) -> Any:
+        """Active color model."""
         return self._model
 
     @model.setter
     def model(self, val: Any) -> None:
+        """Set the active color model."""
         if val in (ColorModel.CMYKModel, CMYKColor):
             self._model = _DualColorModel(ColorModel.CMYKModel, CMYKColor)
         elif val in (ColorModel.HSBModel, HSBColor):
@@ -305,24 +335,31 @@ class ActionReference:
         self.entries: list[tuple[str, Any]] = []
 
     def putIdentifier(self, key: int, value: int) -> None:
+        """Append an identifier reference entry."""
         self.entries.append(("identifier", (key, int(value))))
 
     def putIndex(self, key: int, value: int) -> None:
+        """Append an index reference entry."""
         self.entries.append(("index", (key, int(value))))
 
     def putName(self, key: int, value: str) -> None:
+        """Append a name reference entry."""
         self.entries.append(("name", (key, str(value))))
 
     def putEnumerated(self, key: int, enum_type: int, value: int) -> None:
+        """Append an enumerated reference or value."""
         self.entries.append(("enumerated", (key, enum_type, value)))
 
     def putProperty(self, key: int, value: int) -> None:
+        """Append a property reference entry."""
         self.entries.append(("property", (key, value)))
 
     def putClass(self, value: int) -> None:
+        """Append a class reference entry."""
         self.entries.append(("class", value))
 
     def putOffset(self, key: int, value: int) -> None:
+        """Append an offset reference entry."""
         self.entries.append(("offset", (key, int(value))))
 
 
@@ -334,75 +371,97 @@ class ActionList:
 
     @property
     def count(self) -> int:
+        """Number of entries."""
         return len(self._items)
 
     def putInteger(self, value: int) -> None:
+        """Append an integer value."""
         self._items.append((DescValueType.IntegerType, int(value)))
 
     def putDouble(self, value: float) -> None:
+        """Append a double value."""
         self._items.append((DescValueType.DoubleType, float(value)))
 
     def putUnitDouble(self, unit_id: int, value: float) -> None:
+        """Append a unit-double value."""
         self._items.append((DescValueType.UnitDouble, (unit_id, float(value))))
 
     def putString(self, value: str) -> None:
+        """Append a string value."""
         self._items.append((DescValueType.StringType, str(value)))
 
     def putBoolean(self, value: bool) -> None:
+        """Append a boolean value."""
         self._items.append((DescValueType.BooleanType, bool(value)))
 
     def putObject(self, class_id: int, value: ActionDescriptor) -> None:
+        """Append an object value."""
         self._items.append((DescValueType.ObjectType, (class_id, copy.deepcopy(value))))
 
     def putReference(self, value: ActionReference) -> None:
+        """Append a reference value."""
         self._items.append((DescValueType.ReferenceType, copy.deepcopy(value)))
 
     def putList(self, value: ActionList) -> None:
+        """Append a list value."""
         self._items.append((DescValueType.ListType, copy.deepcopy(value)))
 
     def putEnumerated(self, enum_type: int, value: int) -> None:
+        """Append an enumerated reference or value."""
         self._items.append((DescValueType.EnumeratedType, (enum_type, value)))
 
     def getType(self, index: int) -> DescValueType:
+        """Return the value type at the given index or key."""
         return self._items[index][0]
 
     def getInteger(self, index: int) -> int:
+        """Return the integer value."""
         return int(self._items[index][1])
 
     def getDouble(self, index: int) -> float:
+        """Return the double value."""
         val = self._items[index][1]
         return float(val[1]) if isinstance(val, tuple) else float(val)
 
     def getUnitDoubleType(self, index: int) -> int:
+        """Return the unit type of a unit-double value."""
         val = self._items[index][1]
         return int(val[0]) if isinstance(val, tuple) else 0
 
     def getUnitDoubleValue(self, index: int) -> float:
+        """Return the numeric part of a unit-double value."""
         val = self._items[index][1]
         return float(val[1]) if isinstance(val, tuple) else float(val)
 
     def getString(self, index: int) -> str:
+        """Return the string value."""
         return str(self._items[index][1])
 
     def getBoolean(self, index: int) -> bool:
+        """Return the boolean value."""
         return bool(self._items[index][1])
 
     def getObjectType(self, index: int) -> int:
+        """Return the class ID of an object value."""
         val = self._items[index][1]
         return int(val[0]) if isinstance(val, tuple) else 0
 
     def getObjectValue(self, index: int) -> ActionDescriptor:
+        """Return the nested descriptor."""
         val = self._items[index][1]
         return val[1] if isinstance(val, tuple) else val
 
     def getList(self, index: int) -> ActionList:
+        """Return the nested list."""
         return self._items[index][1]
 
     def getEnumerationType(self, index: int) -> int:
+        """Return the enumeration type ID."""
         val = self._items[index][1]
         return int(val[0]) if isinstance(val, tuple) else 0
 
     def getEnumerationValue(self, index: int) -> int:
+        """Return the enumeration value ID."""
         val = self._items[index][1]
         return int(val[1]) if isinstance(val, tuple) else int(val)
 
@@ -415,135 +474,169 @@ class ActionDescriptor:
 
     @property
     def count(self) -> int:
+        """Number of entries."""
         return len(self._data)
 
     def hasKey(self, key: int) -> bool:
+        """Whether the descriptor contains the given key."""
         return key in self._data
 
     def getKey(self, index: int) -> int:
+        """Return the key ID at the given index."""
         return list(self._data.keys())[index]
 
     def getType(self, key: int) -> DescValueType:
+        """Return the value type at the given index or key."""
         return self._data.get(key, (DescValueType.IntegerType, 0))[0]
 
     def putInteger(self, key: int, value: int) -> None:
+        """Append an integer value."""
         self._data[key] = (DescValueType.IntegerType, int(value))
 
     def putLargeInteger(self, key: int, value: int) -> None:
+        """Append a large integer value."""
         self._data[key] = (DescValueType.LargeIntegerType, int(value))
 
     def putDouble(self, key: int, value: float) -> None:
+        """Append a double value."""
         self._data[key] = (DescValueType.DoubleType, float(value))
 
     def putUnitDouble(self, key: int, unit_id: int, value: float) -> None:
+        """Append a unit-double value."""
         self._data[key] = (DescValueType.UnitDouble, (unit_id, float(value)))
 
     def putString(self, key: int, value: str) -> None:
+        """Append a string value."""
         self._data[key] = (DescValueType.StringType, str(value))
 
     def putBoolean(self, key: int, value: bool) -> None:
+        """Append a boolean value."""
         self._data[key] = (DescValueType.BooleanType, bool(value))
 
     def putObject(self, key: int, class_id: int, value: ActionDescriptor) -> None:
+        """Append an object value."""
         self._data[key] = (DescValueType.ObjectType, (class_id, copy.deepcopy(value)))
 
     def putReference(self, key: int, value: ActionReference) -> None:
+        """Append a reference value."""
         self._data[key] = (DescValueType.ReferenceType, copy.deepcopy(value))
 
     def putList(self, key: int, value: ActionList) -> None:
+        """Append a list value."""
         self._data[key] = (DescValueType.ListType, copy.deepcopy(value))
 
     def putEnumerated(self, key: int, enum_type: int, value: int) -> None:
+        """Append an enumerated reference or value."""
         self._data[key] = (DescValueType.EnumeratedType, (enum_type, value))
 
     def putClass(self, key: int, value: int) -> None:
+        """Append a class reference entry."""
         self._data[key] = (DescValueType.ClassType, int(value))
 
     def putPath(self, key: int, value: str | Path) -> None:
+        """Append a file path value."""
         self._data[key] = (DescValueType.AliasType, str(value))
 
     def putData(self, key: int, value: str | bytes) -> None:
+        """Append a raw data value."""
         self._data[key] = (DescValueType.RawType, value)
 
     def getInteger(self, key: int) -> int:
+        """Return the integer value."""
         if key not in self._data:
             return 0
         val = self._data[key][1]
         return int(val[1]) if isinstance(val, tuple) else int(val)
 
     def getLargeInteger(self, key: int) -> int:
+        """Return the large integer value."""
         return self.getInteger(key)
 
     def getDouble(self, key: int) -> float:
+        """Return the double value."""
         if key not in self._data:
             return 0.0
         val = self._data[key][1]
         return float(val[1]) if isinstance(val, tuple) else float(val)
 
     def getUnitDoubleType(self, key: int) -> int:
+        """Return the unit type of a unit-double value."""
         if key not in self._data:
             return 0
         val = self._data[key][1]
         return int(val[0]) if isinstance(val, tuple) else 0
 
     def getUnitDoubleValue(self, key: int) -> float:
+        """Return the numeric part of a unit-double value."""
         return self.getDouble(key)
 
     def getString(self, key: int) -> str:
+        """Return the string value."""
         if key not in self._data:
             return ""
         return str(self._data[key][1])
 
     def getBoolean(self, key: int) -> bool:
+        """Return the boolean value."""
         if key not in self._data:
             return False
         return bool(self._data[key][1])
 
     def getObjectType(self, key: int) -> int:
+        """Return the class ID of an object value."""
         if key not in self._data:
             return 0
         val = self._data[key][1]
         return int(val[0]) if isinstance(val, tuple) else 0
 
     def getObjectValue(self, key: int) -> ActionDescriptor:
+        """Return the nested descriptor."""
         if key not in self._data:
             return ActionDescriptor()
         val = self._data[key][1]
         return val[1] if isinstance(val, tuple) else val
 
     def getList(self, key: int) -> ActionList:
+        """Return the nested list."""
         if key not in self._data:
             return ActionList()
         return self._data[key][1]
 
     def getReference(self, key: int) -> ActionReference:
+        """Return the nested reference."""
         if key not in self._data:
             return ActionReference()
         return self._data[key][1]
 
     def getEnumerationType(self, key: int) -> int:
+        """Return the enumeration type ID."""
         if key not in self._data:
             return 0
         val = self._data[key][1]
         return int(val[0]) if isinstance(val, tuple) else 0
 
     def getEnumerationValue(self, key: int) -> int:
+        """Return the enumeration value ID."""
         if key not in self._data:
             return 0
         val = self._data[key][1]
         return int(val[1]) if isinstance(val, tuple) else int(val)
 
     def getClass(self, key: int) -> int:
+        """Return the class ID."""
         return self.getInteger(key)
 
     def getPath(self, key: int) -> str:
+        """Return the stored path."""
         return self.getString(key)
 
     def getData(self, key: int) -> str:
+        """Return the stored data."""
         return self.getString(key)
 
 
 class JPEGSaveOptions:
+    """Save options for JPEG output."""
     def __init__(self, quality: int = 12) -> None:
         self.quality = quality
         self.formatOptions = FormatOptionsType.StandardBaseline
@@ -552,12 +645,14 @@ class JPEGSaveOptions:
 
 
 class PNGSaveOptions:
+    """Save options for PNG output."""
     def __init__(self, compression: int = 3, interlaced: bool = False) -> None:
         self.compression = compression
         self.interlaced = interlaced
 
 
 class PhotoshopSaveOptions:
+    """Save options for PSD/PSB output."""
     def __init__(self) -> None:
         self.alphaChannels = True
         self.annotations = True
@@ -594,6 +689,7 @@ class _TextFonts:
 
     @property
     def app(self) -> _TextFonts:
+        """The fonts collection itself."""
         return self
 
     def __iter__(self):
@@ -603,6 +699,7 @@ class _TextFonts:
         return len(self._fonts)
 
     def getByName(self, name: str) -> _TextFont:
+        """Return a font by name."""
         for f in self._fonts:
             if f.name == name or f.postScriptName == name:
                 return f
@@ -669,6 +766,7 @@ class Application(Photoshop):
 
     @property
     def activeDocument(self) -> Document:
+        """Currently open document, creating one if needed."""
         if self._active_doc is None:
             if self.documents._docs:
                 self._active_doc = self.documents._docs[-1]
@@ -678,12 +776,15 @@ class Application(Photoshop):
 
     @activeDocument.setter
     def activeDocument(self, doc: Document) -> None:
+        """Set the active document."""
         self._active_doc = doc
 
     def bringToFront(self) -> None:
+        """No-op: PhotoCraft has no window ordering."""
         pass
 
     def load(self, file_path: str | Path) -> Document:
+        """Open a document from the given path and make it active."""
         doc = Document(parent=self, file_path=file_path)
         self.documents._docs = [
             d for d in self.documents._docs if d.name != doc.name
@@ -693,30 +794,38 @@ class Application(Photoshop):
         return doc
 
     def open(self, file_path: str | Path) -> Document:
+        """Alias of ``load``."""
         return self.load(file_path)
 
     def purge(self, target: PurgeTarget = PurgeTarget.AllCaches) -> None:
+        """No-op: cache purging is not implemented."""
         pass
 
     def refreshFonts(self) -> None:
+        """No-op: fonts come from the static font table."""
         pass
 
     def doJavaScript(self, javascript: str, *args: Any, **kwargs: Any) -> str:
+        """No-op: JavaScript execution is not supported."""
         return ""
 
     def charIDToTypeID(self, char_id: str) -> int:
+        """Map a four-character ID to its numeric type ID."""
         return _register_id(char_id)
 
     def typeIDToCharID(self, type_id: int) -> str:
+        """Map a numeric type ID to its four-character ID when possible."""
         s = _ID_TO_STR.get(type_id)
         if s and len(s) == 4:
             return s
         return "    "
 
     def stringIDToTypeID(self, string_id: str) -> int:
+        """Map a string ID to its numeric type ID."""
         return _register_id(string_id)
 
     def typeIDToStringID(self, type_id: int) -> str:
+        """Map a numeric type ID to its string ID."""
         return _ID_TO_STR.get(type_id, str(type_id))
 
     def _resolve_target_layer(self, ref: ActionReference | None) -> ArtLayer | LayerSet | None:
@@ -761,6 +870,7 @@ class Application(Photoshop):
         descriptor: ActionDescriptor | None = None,
         display_dialogs: DialogModes = DialogModes.DisplayNoDialogs,
     ) -> ActionDescriptor:
+        """Execute a Photoshop action descriptor through PhotoCraft."""
         event_name = self.typeIDToStringID(event_id)
         doc = self._active_doc
         if doc is None:
@@ -1284,6 +1394,7 @@ class Application(Photoshop):
         return ActionDescriptor()
 
     def executeActionGet(self, reference: ActionReference) -> ActionDescriptor:
+        """Build the descriptor describing a layer's current state."""
         desc = ActionDescriptor()
         target_layer = self._resolve_target_layer(reference)
         l, t, r, b = (0, 0, 100, 100)

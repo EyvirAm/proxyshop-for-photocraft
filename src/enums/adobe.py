@@ -14,11 +14,13 @@ from src import APP
 
 
 class DescriptorEnum(Enum):
+    """``DescriptorEnum`` options."""
     def __call__(self) -> int:
         return self.value
 
     @property
     def value(self) -> int:
+        """Enum value."""
         return int(APP.instance.sID(self._value_))
 
 

@@ -1,3 +1,9 @@
+"""
+* Template Updater Model
+
+Exposes every known template to QML, checks Google Drive for new versions and
+performs the downloads triggered from the updater window.
+"""
 from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from functools import cached_property
@@ -16,6 +22,12 @@ from src.utils.hexapi import check_api_keys
 
 
 class DownloadableTemplateDetails(BaseModel):
+    """One row of the template updater list.
+
+    The ``handler`` is attached after construction and points at the
+    ``AppTemplate`` responsible for checking and installing the update.
+    """
+
     file_name: str
     google_drive_id: str | None
     img: str
@@ -32,6 +44,7 @@ class DownloadableTemplateDetails(BaseModel):
 
     @cached_property
     def handler(self) -> AppTemplate:
+        """The ``AppTemplate`` backing this row, injected by the model."""
         raise ValueError("Download handler is not specified")
 
 
@@ -39,6 +52,8 @@ _data_fetch_lock = Lock()
 
 
 class TemplateUpdaterModel(PydanticQListModel[DownloadableTemplateDetails]):
+    """QML list model that drives the template updater window."""
+
     item_model = DownloadableTemplateDetails
 
     def __init__(
@@ -65,21 +80,29 @@ class TemplateUpdaterModel(PydanticQListModel[DownloadableTemplateDetails]):
 
     @Property(bool, notify=_fetching_data_changed)
     def fetching_data(self) -> bool:  # pyright: ignore[reportRedeclaration]
+        """Whether a metadata refresh is currently running."""
         return self._fetching_data
 
     @fetching_data.setter
     def fetching_data(self, value: bool) -> None:
+        """Set update the refresh flag and notify QML when it changes."""
         if value != self._fetching_data:
             self._fetching_data = value
             self._fetching_data_changed.emit()
 
     @Slot()
     def fetch_data(self) -> None:
+        """Start a metadata refresh without blocking the UI thread."""
         ensure_future(self.handle_fetch_data())
 
     _update_available = Signal(name="updateAvailable")
 
     async def handle_fetch_data(self) -> bool:
+        """Check every template for updates and rebuild the item list.
+
+        Returns:
+            True when at least one installed template has a newer version.
+        """
         if not _data_fetch_lock.acquire(False):
             return False
 
@@ -145,6 +168,7 @@ class TemplateUpdaterModel(PydanticQListModel[DownloadableTemplateDetails]):
 
     @Slot(int)
     def download_template(self, index: int) -> None:
+        """Download the template shown at ``index`` in the model."""
         if index < 0 or index >= self.rowCount():
             return
 
@@ -165,6 +189,7 @@ class TemplateUpdaterModel(PydanticQListModel[DownloadableTemplateDetails]):
 
     @Slot()
     def save_versions(self) -> None:
+        """Persist the installed template versions to disk."""
         self._template_library.save_template_versions()
 
     _template_library_change_lock = Lock()

@@ -1,3 +1,8 @@
+"""
+* Utils: UXP Text
+
+Text layer descriptors and helpers.
+"""
 from __future__ import annotations
 from _ctypes import COMError
 from typing import Literal, NotRequired, TypedDict, Unpack
@@ -23,26 +28,31 @@ FromToDescriptor = TypedDict(
 
 
 class UnitDescriptor(TypedDict):
+    """Fields of ``UnitDescriptor``."""
     _unit: Literal["pixelsUnit", "pointsUnit"]
     _value: float | int
 
 
 class OrientationDescriptor(TypedDict):
+    """Fields of ``OrientationDescriptor``."""
     _enum: Literal["orientation"]
     _value: Literal["horizontal", "vertical"]
 
 
 class AlignmentTypeDescriptor(TypedDict):
+    """Fields of ``AlignmentTypeDescriptor``."""
     _enum: Literal["alignmentType"]
     _value: Literal["left", "right"]
 
 
 class DirectionTypeDescriptor(TypedDict):
+    """Fields of ``DirectionTypeDescriptor``."""
     _enum: Literal["directionType"]
     _value: Literal["dirLeftToRight", "dirRightToLeft"]
 
 
 class ParagraphStyleDescriptor(TypedDict):
+    """Fields of ``ParagraphStyleDescriptor``."""
     _obj: Literal["paragraphStyle"]
     align: NotRequired[AlignmentTypeDescriptor]
     directionType: NotRequired[DirectionTypeDescriptor]
@@ -53,17 +63,20 @@ class ParagraphStyleDescriptor(TypedDict):
 
 
 class ParagraphStyleRangeDescriptor(FromToDescriptor):
+    """BatchPlay paragraph style range descriptor."""
     _obj: Literal["paragraphStyleRange"]
     paragraphStyle: ParagraphStyleDescriptor
 
 
 class AnchorDescriptor(TypedDict):
+    """Fields of ``AnchorDescriptor``."""
     _obj: Literal["paint"]
     horizontal: UnitDescriptor
     vertical: UnitDescriptor
 
 
 class PathPointDescriptor(TypedDict):
+    """Fields of ``PathPointDescriptor``."""
     _obj: Literal["pathPoint"]
     anchor: AnchorDescriptor
     backward: NotRequired[AnchorDescriptor]
@@ -72,39 +85,46 @@ class PathPointDescriptor(TypedDict):
 
 
 class SubpathsListDescriptor(TypedDict):
+    """Fields of ``SubpathsListDescriptor``."""
     _obj: Literal["subpathsList"]
     closedSubpath: bool
     points: list[PathPointDescriptor]
 
 
 class ShapeOperationDescriptor(TypedDict):
+    """Fields of ``ShapeOperationDescriptor``."""
     _enum: Literal["shapeOperation"]
     _value: Literal["xor"]
 
 
 class PathComponentDescriptor(TypedDict):
+    """Fields of ``PathComponentDescriptor``."""
     _obj: Literal["pathComponent"]
     shapeOperation: ShapeOperationDescriptor
     subpathListKey: list[SubpathsListDescriptor]
 
 
 class CharDescriptor(TypedDict):
+    """Fields of ``CharDescriptor``."""
     _enum: Literal["char"]
     _value: Literal["box"]
 
 
 class PathClassDescriptor(TypedDict):
+    """Fields of ``PathClassDescriptor``."""
     _obj: Literal["pathClass"]
     pathComponents: list[PathComponentDescriptor]
 
 
 class TextShapeDescriptor(TypedDict):
+    """Fields of ``TextShapeDescriptor``."""
     _obj: Literal["textShape"]
     char: CharDescriptor
     path: PathClassDescriptor
 
 
 class ColorDescriptor(TypedDict):
+    """Fields of ``ColorDescriptor``."""
     _obj: Literal["RGBColor"]
     blue: float | int
     grain: float | int
@@ -112,11 +132,13 @@ class ColorDescriptor(TypedDict):
 
 
 class KerningDescriptor(TypedDict):
+    """Fields of ``KerningDescriptor``."""
     _enum: Literal["autoKern"]
     _value: Literal["metricsKern", "opticalKern"]
 
 
 class TextStyleDescriptor(TypedDict):
+    """Fields of ``TextStyleDescriptor``."""
     _obj: Literal["textStyle"]
     color: NotRequired[ColorDescriptor]
     fontName: NotRequired[str]
@@ -132,11 +154,13 @@ class TextStyleDescriptor(TypedDict):
 
 
 class TextStyleRangeDescriptor(FromToDescriptor):
+    """BatchPlay text style range descriptor."""
     _obj: Literal["textStyleRange"]
     textStyle: TextStyleDescriptor
 
 
 class TextLayerDescriptor(TypedDict):
+    """Fields of ``TextLayerDescriptor``."""
     _obj: Literal["textLayer"]
     kerningRange: NotRequired[list[None]]
     orientation: NotRequired[OrientationDescriptor]
@@ -147,11 +171,13 @@ class TextLayerDescriptor(TypedDict):
 
 
 class MakeTextLayerActionDescriptor(ActionDescriptor):
+    """BatchPlay descriptor for creating a text layer."""
     _obj: Literal["make"]
     using: TextLayerDescriptor
 
 
 class CreateTextLayerWithPathOptions(TypedDict):
+    """Fields of ``CreateTextLayerWithPathOptions``."""
     color: NotRequired[SolidColor]
     size: NotRequired[float]
     leading: NotRequired[float]

@@ -1,3 +1,5 @@
+// Tool window for previewing installed fonts.
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls

@@ -50,6 +50,7 @@ _logger.addHandler(_error_log_file_handler)
 
 
 class MessageSeverity(IntEnum):
+    """``MessageSeverity`` options."""
     DEBUG = DEBUG
     INFO = INFO
     WARNING = WARNING
@@ -71,6 +72,7 @@ class LogColors(StrEnum):
 
 
 class LogMessageColor(StrEnum):
+    """``LogMessageColor`` options."""
     DEBUG = "#d8d8d8"
     SUCCESS = "#59d461"
     INFO = "#6bbcfa"
@@ -93,6 +95,7 @@ LOG_MESSAGE_COLORS_MAP: dict[int, LogMessageColor] = {
 
 
 class CustomLogHandler(Handler):
+    """Logging handler that forwards records to the Qt console model."""
     def __init__(
         self, on_log: Callable[[str, MessageSeverity], None], level: int | str = 0
     ) -> None:
@@ -100,6 +103,7 @@ class CustomLogHandler(Handler):
         self.on_log = on_log
 
     def emit(self, record: LogRecord) -> None:
+        """Emit a log record to the Qt console model."""
         try:
             self.on_log(self.format(record), MessageSeverity(record.levelno))
         except Exception:  # noqa: BLE001

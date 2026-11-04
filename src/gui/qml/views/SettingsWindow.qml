@@ -1,3 +1,5 @@
+// Settings tree for global and template settings.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQml

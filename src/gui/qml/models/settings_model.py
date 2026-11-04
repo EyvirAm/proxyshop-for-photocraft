@@ -1,3 +1,8 @@
+"""
+* GUI: Settings Model
+
+QML model for application settings.
+"""
 from __future__ import annotations
 from functools import cached_property
 from typing import Literal, override
@@ -27,6 +32,7 @@ from src.gui.qml.models.settings_tree_model import SettingsTreeModel
 
 
 class HybridSettingItem(BaseModel):
+    """``HybridSettingItem`` model."""
     type: Literal["title", "bool", "string", "numeric", "options", "int", "float"]
     title: str
     desc: str | None = None
@@ -36,14 +42,17 @@ class HybridSettingItem(BaseModel):
 
     @cached_property
     def section(self) -> str:
+        """Settings section key."""
         return ""
 
     @cached_property
     def key(self) -> str:
+        """Setting key."""
         return ""
 
 
 class SettingsModel(PydanticQListModel[HybridSettingItem]):
+    """QML model for application settings."""
     item_model = HybridSettingItem
 
     def __init__(
@@ -62,10 +71,12 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
 
     @property
     def current_config_handler(self) -> ConfigHandler | None:
+        """Current config handler."""
         return self._current_config_handler
 
     @current_config_handler.setter
     def current_config_handler(self, value: ConfigHandler | None) -> None:
+        """Set the current config handler."""
         if self._current_config_handler:
             self._current_config_handler.config_deleted.remove_listener(self._on_clear)
             self._current_config_handler.config_reset.remove_listener(self._on_reset)
@@ -93,6 +104,7 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
         /,
         role: int = Qt.ItemDataRole.EditRole,
     ) -> bool:
+        """Set data."""
         if index.isValid() or self._roles.get(role) == "value":
             item = self.items[index.row()]
             if self._current_config_handler and self._current_config_handler.set_value(
@@ -104,6 +116,7 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
         return False
 
     def populate_settings(self, config_handler: ConfigHandler) -> None:
+        """Populate settings."""
         new_items: list[HybridSettingItem] = []
         schemas = (
             (config_handler.base_schema.root, config_handler.schema.root)
@@ -156,6 +169,7 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
 
     @Slot(QModelIndex)
     def on_settings_section_change(self, value: QModelIndex) -> None:
+        """On settings section change."""
         if selected := self.settings_tree_model.selected_section:
             self.populate_settings(selected)
         else:
@@ -169,22 +183,27 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
 
     @Slot(int, bool)
     def bool_value_changed(self, index: int, value: bool) -> None:
+        """Bool value changed."""
         self._set_value(index, value)
 
     @Slot(int, str)
     def str_value_changed(self, index: int, value: str) -> None:
+        """Str value changed."""
         self._set_value(index, value)
 
     @Slot(int, int)
     def int_value_changed(self, index: int, value: int) -> None:
+        """Int value changed."""
         self._set_value(index, value)
 
     @Slot(int, float)
     def float_value_changed(self, index: int, value: float) -> None:
+        """Float value changed."""
         self._set_value(index, value)
 
     @Slot()
     def reset(self) -> None:
+        """Reset the current settings to their defaults."""
         if self._current_config_handler:
             self._current_config_handler.reset()
 
@@ -194,6 +213,7 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
 
     @Slot()
     def clear(self) -> None:
+        """Clear the current template settings."""
         if self._current_config_handler:
             self._current_config_handler.delete()
 
@@ -205,4 +225,5 @@ class SettingsModel(PydanticQListModel[HybridSettingItem]):
 
     @Property(bool, notify=_valid_changed)
     def valid(self) -> bool:
+        """Whether the current settings are valid."""
         return self._current_config_handler is not None

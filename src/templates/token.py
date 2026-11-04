@@ -218,6 +218,7 @@ class TokenTemplate(FullartMod, StarterTemplate):
                 )
 
     def text_adjustments(self) -> None:
+        """Center the name and align the type line and rules text."""
         # Vertically center the name after it's been scaled
         psd.align_all(self.text_layer_name, self.name_reference)
 

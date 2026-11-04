@@ -1,3 +1,5 @@
+// Plugin manager and updater view.
+
 pragma ComponentBehavior: Bound
 import QtCore
 import QtQml

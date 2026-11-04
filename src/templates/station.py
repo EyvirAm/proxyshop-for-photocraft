@@ -1,3 +1,8 @@
+"""
+* Templates: Station
+
+Template modifier for Station cards (Edge of Eternities).
+"""
 from __future__ import annotations
 from collections.abc import Callable
 from functools import cached_property
@@ -36,6 +41,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def is_centered(self) -> bool:
+        """Station rules text is never centered."""
         if self.is_station:
             return False
         return super().is_centered
@@ -46,6 +52,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def rules_text_gap(self) -> int | float:
+        """Vertical gap between Station ability blocks."""
         return 64
 
     # endregion Options
@@ -54,14 +61,17 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def station_group(self) -> LayerSet | None:
+        """Group containing Station-specific layers."""
         return getLayerSet(LAYERS.STATION)
 
     @cached_property
     def station_level_base_group(self) -> LayerSet | None:
+        """Base level group duplicated once per Station level."""
         return getLayerSet(LAYERS.LEVEL, self.station_group)
 
     @cached_property
     def station_level_groups(self) -> list[LayerSet]:
+        """One level group per Station level."""
         groups: list[LayerSet] = []
         if self.station_level_base_group:
             if isinstance(self.layout, StationLayout):
@@ -77,6 +87,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def station_requirement_groups(self) -> list[LayerSet]:
+        """Requirement group for each Station level."""
         groups: list[LayerSet] = []
         for level_group in self.station_level_groups:
             if group := getLayerSet(LAYERS.REQUIREMENT, level_group):
@@ -85,6 +96,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def station_pt_groups(self) -> list[LayerSet]:
+        """P/T group for each Station level."""
         groups: list[LayerSet] = []
         for level_group in self.station_level_groups:
             if group := getLayerSet(LAYERS.PT_BOX, level_group):
@@ -97,6 +109,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def station_requirement_text_layers(self) -> list[ArtLayer]:
+        """Requirement text layer for each Station level."""
         layers: list[ArtLayer] = []
         for requirement_group in self.station_requirement_groups:
             if layer := getLayer(LAYERS.TEXT, requirement_group):
@@ -105,6 +118,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def station_level_text_layers(self) -> list[ArtLayer]:
+        """Rules text layer for each Station level."""
         layers: list[ArtLayer] = []
         if isinstance(self.layout, StationLayout):
             for details, level_group in zip(
@@ -121,6 +135,7 @@ class StationMod(NormalTemplate):
 
     @cached_property
     def station_pt_text_layers(self) -> list[ArtLayer]:
+        """P/T text layer for each Station level."""
         layers: list[ArtLayer] = []
         for pt_group in self.station_pt_groups:
             if layer := getLayer(LAYERS.TEXT, pt_group):
@@ -196,6 +211,7 @@ class StationMod(NormalTemplate):
     # region Positioning methods
 
     def align_center_ys(self, group: LayerSet, ref: ArtLayer) -> None:
+        """Vertically center a group on a reference layer."""
         dims = get_group_dimensions(group)
         dims_ref = get_layer_dimensions(ref)
         group.translate(0, dims_ref["center_y"] - dims["center_y"])

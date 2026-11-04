@@ -1,3 +1,5 @@
+// Batch mode view: choose a template per layout and queue renders.
+
 pragma ComponentBehavior: Bound
 import QtQml
 import QtQuick

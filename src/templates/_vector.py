@@ -29,6 +29,8 @@ from src.templates import NormalTemplate
 
 
 class MaskAction(TypedDict):
+    """Description of a mask operation applied to a generated layer."""
+
     layer: NotRequired[ArtLayer | LayerSet]
     mask: ArtLayer | LayerSet
     vector: NotRequired[bool]

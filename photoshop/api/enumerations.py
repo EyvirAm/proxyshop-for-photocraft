@@ -7,12 +7,16 @@ from enum import IntEnum
 
 
 class DialogModes(IntEnum):
+    """How Photoshop dialogs are displayed while running actions."""
+
     DisplayAllDialogs = 1
     DisplayErrorDialogs = 2
     DisplayNoDialogs = 3
 
 
 class Units(IntEnum):
+    """Document measurement units."""
+
     Pixels = 1
     Inches = 2
     CM = 3
@@ -23,12 +27,16 @@ class Units(IntEnum):
 
 
 class TypeUnits(IntEnum):
+    """Units used for text measurements."""
+
     TypePixels = 1
     TypeMM = 4
     TypePoints = 5
 
 
 class ElementPlacement(IntEnum):
+    """Placement of a layer relative to another element."""
+
     PlaceInside = 0
     PlaceAtBeginning = 1
     PlaceAtEnd = 2
@@ -37,6 +45,8 @@ class ElementPlacement(IntEnum):
 
 
 class AnchorPosition(IntEnum):
+    """Anchor point used by transforms and canvas resizes."""
+
     TopLeft = 1
     TopCenter = 2
     TopRight = 3
@@ -49,12 +59,16 @@ class AnchorPosition(IntEnum):
 
 
 class AutoKernType(IntEnum):
+    """Kerning mode applied to text."""
+
     NoAutoKern = 1
     Metrics = 2
     Optical = 3
 
 
 class BlendMode(IntEnum):
+    """Layer blend modes exposed by Photoshop."""
+
     PassThrough = 1
     NormalBlend = 2
     Dissolve = 3
@@ -86,12 +100,16 @@ class BlendMode(IntEnum):
 
 
 class ColorBlendMode(IntEnum):
+    """Blend modes specific to fill/stroke operations."""
+
     NormalBlendColor = 2
     BehindBlend = 29
     ClearBlend = 30
 
 
 class ColorModel(IntEnum):
+    """Color models supported by Photoshop."""
+
     GrayscaleModel = 1
     RGBModel = 2
     CMYKModel = 3
@@ -101,6 +119,8 @@ class ColorModel(IntEnum):
 
 
 class DescValueType(IntEnum):
+    """Action descriptor value types."""
+
     IntegerType = 1
     DoubleType = 2
     UnitDouble = 3
@@ -117,12 +137,16 @@ class DescValueType(IntEnum):
 
 
 class FormatOptionsType(IntEnum):
+    """JPEG save baseline options."""
+
     StandardBaseline = 1
     OptimizedBaseline = 2
     Progressive = 3
 
 
 class Justification(IntEnum):
+    """Paragraph alignment options."""
+
     Left = 1
     Center = 2
     Right = 3
@@ -133,11 +157,15 @@ class Justification(IntEnum):
 
 
 class Language(IntEnum):
+    """Text language used for spelling and hyphenation."""
+
     EnglishUSA = 1
     EnglishUK = 2
 
 
 class LayerKind(IntEnum):
+    """Kinds of layers supported by Photoshop."""
+
     NormalLayer = 1
     TextLayer = 2
     grouped = 3
@@ -159,11 +187,15 @@ class LayerKind(IntEnum):
 
 
 class PointKind(IntEnum):
+    """Path point interpolation kind."""
+
     SmoothPoint = 1
     CornerPoint = 2
 
 
 class PurgeTarget(IntEnum):
+    """Photoshop caches that can be purged."""
+
     UndoCaches = 1
     HistoryCaches = 2
     ClipboardCache = 3
@@ -171,6 +203,8 @@ class PurgeTarget(IntEnum):
 
 
 class RasterizeType(IntEnum):
+    """What part of a layer gets rasterized."""
+
     TextContents = 1
     Shape = 2
     FillContent = 3
@@ -180,6 +214,8 @@ class RasterizeType(IntEnum):
 
 
 class SaveOptions(IntEnum):
+    """Whether closing a document saves its changes."""
+
     SaveChanges = 1
     DoNotSaveChanges = 2
     PromptToSaveChanges = 3

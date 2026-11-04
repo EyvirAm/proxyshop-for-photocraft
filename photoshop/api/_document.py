@@ -62,6 +62,7 @@ class Document(Photoshop):
             self._active_layer = default_layer
 
     def find_layer_by_id(self, layer_id: int) -> ArtLayer | LayerSet | None:
+        """Return a layer or group by ID, searching the tree recursively."""
         if layer_id in self._layer_by_id:
             return self._layer_by_id[layer_id]
 
@@ -83,18 +84,22 @@ class Document(Photoshop):
 
     @property
     def fullName(self) -> str:
+        """Absolute path to the document, or its name when unsaved."""
         return str(self._file_path) if self._file_path else self.name
 
     @property
     def path(self) -> str:
+        """Parent directory of the document, or '.' when unsaved."""
         return str(self._file_path.parent) if self._file_path else "."
 
     @property
     def layers(self) -> list[ArtLayer | LayerSet]:
+        """Top-level layers and layer groups."""
         return [*self.artLayers._items, *self.layerSets._items]
 
     @property
     def activeLayer(self) -> ArtLayer | LayerSet:
+        """Currently selected layer, creating a background layer if empty."""
         if self._active_layer is None:
             if self.artLayers._items:
                 self._active_layer = self.artLayers._items[0]
@@ -106,6 +111,7 @@ class Document(Photoshop):
 
     @activeLayer.setter
     def activeLayer(self, layer: ArtLayer | LayerSet) -> None:
+        """Select a layer as the active layer."""
         self._active_layer = layer
         self._exec_photocraft("layer.select", {"layer": layer.id, "mode": "replace"})
 
@@ -127,6 +133,7 @@ class Document(Photoshop):
         """Fetch a layer's pixel bounds from Photocraft, refreshing the cached value."""
 
         def walk(items: list[dict[str, Any]]) -> tuple[float, float, float, float] | None:
+            """Walk."""
             for item in items:
                 if int(item.get("id", -1)) == layer_id:
                     b = item.get("bounds")
@@ -366,6 +373,7 @@ class Document(Photoshop):
                     self._active_layer = art
 
     def save(self) -> None:
+        """Save the document to its current path."""
         if self._file_path:
             self.saveAs(str(self._file_path))
 
@@ -377,6 +385,7 @@ class Document(Photoshop):
         *args: Any,
         **kwargs: Any,
     ) -> None:
+        """Save to ``file_path``, optionally leaving the current path unchanged."""
         out_path = Path(file_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -415,6 +424,7 @@ class Document(Photoshop):
             self._file_path = out_path
 
     def close(self, saving: SaveOptions = SaveOptions.DoNotSaveChanges) -> None:
+        """Close the document, optionally saving changes first."""
         if saving == SaveOptions.SaveChanges and self._file_path:
             self.save()
         if self.app is not None and hasattr(self.app, "photocraft_close"):
@@ -423,15 +433,18 @@ class Document(Photoshop):
             self.app.documents._remove_doc(self)
 
     def paste(self, *args: Any, **kwargs: Any) -> ArtLayer:
+        """Paste the clipboard and return the resulting layer."""
         self._exec_photocraft("edit.paste", {})
         if self._active_layer and isinstance(self._active_layer, ArtLayer):
             return self._active_layer
         return self.artLayers.add()
 
     def flatten(self) -> None:
+        """Flatten the document into a single layer."""
         self._exec_photocraft("layer.flattenImage", {})
 
     def mergeVisibleLayers(self) -> None:
+        """Merge all visible layers."""
         self._exec_photocraft("layer.mergeVisible", {})
 
     def resizeImage(
@@ -442,6 +455,7 @@ class Document(Photoshop):
         *args: Any,
         **kwargs: Any,
     ) -> None:
+        """Resize the image and update its physical dimensions."""
         if width is not None:
             self.width = int(width)
         if height is not None:
@@ -459,6 +473,7 @@ class Document(Photoshop):
         height: float | None = None,
         anchor: Any = None,
     ) -> None:
+        """Resize the canvas without scaling its contents."""
         if width is not None:
             self.width = int(width)
         if height is not None:
@@ -469,6 +484,7 @@ class Document(Photoshop):
         )
 
     def rotateCanvas(self, angle: float) -> None:
+        """Rotate the canvas by the given angle."""
         ang = float(angle)
         self._exec_photocraft("layer.flattenImage", {})
         if ang in (-90.0, 270.0):
@@ -483,6 +499,7 @@ class Document(Photoshop):
             self._exec_photocraft("image.rotation.arbitrary", {"angle": ang})
 
     def crop(self, bounds: tuple[float, float, float, float], *args: Any, **kwargs: Any) -> None:
+        """Crop the document to the given ``(left, top, right, bottom)`` bounds."""
         l, t, r, b = bounds
         self.width = max(1, int(r - l))
         self.height = max(1, int(b - t))
@@ -492,9 +509,11 @@ class Document(Photoshop):
         )
 
     def trim(self, *args: Any, **kwargs: Any) -> None:
+        """Trim transparent edges from the document."""
         self._exec_photocraft("image.trim", {})
 
     def duplicate(self, name: str | None = None, *args: Any, **kwargs: Any) -> Document:
+        """Duplicate the document, optionally giving the copy a new name."""
         dup = Document(
             parent=self.parent,
             file_path=self._file_path,
@@ -509,6 +528,7 @@ class Document(Photoshop):
         return dup
 
     def suspendHistory(self, historyString: str, javaScriptString: str) -> None:
+        """No-op: history suspension is not implemented."""
         pass
 
 
@@ -521,6 +541,7 @@ class Documents:
 
     @property
     def length(self) -> int:
+        """Number of open documents."""
         return len(self._docs)
 
     def __len__(self) -> int:
@@ -535,6 +556,7 @@ class Documents:
         return self.getByName(key)
 
     def getByName(self, name: str) -> Document:
+        """Return the first document matching ``name`` or its file stem."""
         for doc in self._docs:
             if doc.name == name or Path(doc.name).stem == Path(name).stem:
                 return doc
@@ -549,6 +571,7 @@ class Documents:
         *args: Any,
         **kwargs: Any,
     ) -> Document:
+        """Create a new document and make it the active document."""
         doc = Document(
             parent=self.app,
             width=int(width),

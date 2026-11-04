@@ -1,3 +1,8 @@
+"""
+* GUI: Image Transform Model
+
+QML model for the image transform editor.
+"""
 from __future__ import annotations
 from asyncio import ensure_future, gather, to_thread
 from concurrent.futures import ThreadPoolExecutor
@@ -14,6 +19,7 @@ _logger = getLogger(__name__)
 
 
 class ImageTransformModel(QObject):
+    """QML model for the image transform editor."""
     def __init__(
         self,
         /,
@@ -45,16 +51,19 @@ class ImageTransformModel(QObject):
 
     @Property(list, notify=_image_file_formats_changed)
     def image_file_formats(self) -> list[str]:
+        """Image file formats."""
         return self._image_file_formats
 
     _downscale_changed = Signal()
 
     @Property(bool, notify=_downscale_changed)
     def downscale(self) -> bool:  # pyright: ignore[reportRedeclaration]
+        """Whether images should be downscaled."""
         return self._downscale
 
     @downscale.setter
     def downscale(self, value: bool) -> None:
+        """Set whether images should be downscaled."""
         if value != self._downscale:
             self._downscale = value
             self._downscale_changed.emit()
@@ -63,10 +72,12 @@ class ImageTransformModel(QObject):
 
     @Property(int, notify=_downscale_width_changed)
     def downscale_width(self) -> int:  # pyright: ignore[reportRedeclaration]
+        """Target width used when downscaling."""
         return self._downscale_width
 
     @downscale_width.setter
     def downscale_width(self, value: int) -> None:
+        """Set target width used when downscaling."""
         if value != self._downscale_width:
             self._downscale_width = value
             self._downscale_width_changed.emit()
@@ -75,10 +86,12 @@ class ImageTransformModel(QObject):
 
     @Property(str, notify=_image_file_format_changed)
     def image_file_format(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Output image format."""
         return self._image_file_format
 
     @image_file_format.setter
     def image_file_format(self, value: str) -> None:
+        """Set output image format."""
         if value != self._image_file_format:
             self._image_file_format = value
             self._image_file_format_changed.emit()
@@ -87,17 +100,21 @@ class ImageTransformModel(QObject):
 
     @Property(int, notify=_encoding_quality_changed)
     def encoding_quality(self) -> int:  # pyright: ignore[reportRedeclaration]
+        """Encoding quality for lossy formats."""
         return self._encoding_quality
 
     @encoding_quality.setter
     def encoding_quality(self, value: int) -> None:
+        """Set encoding quality for lossy formats."""
         if value != self._encoding_quality:
             self._encoding_quality = value
             self._encoding_quality_changed.emit()
 
     @Slot()
     def transform_images(self) -> None:
+        """Transform images."""
         async def action():
+            """Transform the selected images."""
             images = await self._file_dialog_model.select_images(
                 dialog_id="image_transform"
             )
@@ -106,6 +123,7 @@ class ImageTransformModel(QObject):
         ensure_future(action())
 
     async def transform_image(self, image: Path) -> None:
+        """Transform image."""
         try:
             out_dir = image.parent / "compressed"
             out_dir.mkdir(parents=True, exist_ok=True)

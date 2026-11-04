@@ -80,10 +80,12 @@ class ClassMod(NormalTemplate):
 
     @cached_property
     def class_group(self) -> LayerSet | None:
+        """Group containing Class-specific layers."""
         return psd.getLayerSet(LAYERS.CLASS)
 
     @cached_property
     def stage_group(self) -> LayerSet | None:
+        """Stage group inside the Class group."""
         return psd.getLayerSet(LAYERS.STAGE, self.class_group)
 
     """
@@ -92,10 +94,12 @@ class ClassMod(NormalTemplate):
 
     @cached_property
     def text_layer_ability(self) -> ArtLayer | None:
+        """Template text layer for class abilities."""
         return psd.getLayer(LAYERS.TEXT, self.class_group)
 
     @cached_property
     def class_text_layer_reminder(self) -> ArtLayer | None:
+        """Reminder text layer for the Class mechanic."""
         return psd.getLayer(LAYERS.REMINDER_TEXT, self.class_group)
 
     """
@@ -104,10 +108,12 @@ class ClassMod(NormalTemplate):
 
     @property
     def class_line_layers(self) -> list[ArtLayer]:
+        """Duplicated text layers, one per class level."""
         return self._class_line_layers
 
     @class_line_layers.setter
     def class_line_layers(self, value: list[ArtLayer]):
+        """Set replace the cached class line layers."""
         self._class_line_layers = value
 
     """
@@ -116,14 +122,17 @@ class ClassMod(NormalTemplate):
 
     @cached_property
     def class_reminder_divider(self) -> ArtLayer | LayerSet | None:
+        """Divider between class levels or reminder text."""
         return psd.getLayer(LAYERS.DIVIDER, self.class_group)
 
     @property
     def class_stage_layers(self) -> list[LayerSet]:
+        """Stage group copies, one per class level."""
         return self._class_stage_layers
 
     @class_stage_layers.setter
     def class_stage_layers(self, value: list[LayerSet]):
+        """Set replace the cached class stage layers."""
         self._class_stage_layers = value
 
     """
@@ -348,6 +357,7 @@ class ClassVectorTemplate(VectorNyxMod, ClassMod, VectorTemplate):
 
     @cached_property
     def twins_layer(self) -> ArtLayer | None:
+        """Twins texture, using the back variant for back faces."""
         # Use Back face versions for back side Transform
         return psd.getLayer(
             f"{self.twins} {LAYERS.BACK}"
@@ -362,10 +372,12 @@ class ClassVectorTemplate(VectorNyxMod, ClassMod, VectorTemplate):
 
     @cached_property
     def art_reference(self) -> ReferenceLayer | None:
+        """Art frame reference on the left side."""
         return get_reference_layer(LAYERS.ART_FRAME + " Left")
 
     @cached_property
     def textbox_reference(self) -> ReferenceLayer | None:
+        """Textbox reference, using the Transform front variant when needed."""
         if self.is_front and self.is_flipside_creature:
             return psd.get_reference_layer(
                 f"{LAYERS.TEXTBOX_REFERENCE} {LAYERS.TRANSFORM_FRONT}", self.class_group
@@ -374,6 +386,7 @@ class ClassVectorTemplate(VectorNyxMod, ClassMod, VectorTemplate):
 
     @cached_property
     def textbox_position_reference(self) -> ArtLayer | None:
+        """Right art frame reference used to align the textbox."""
         return psd.getLayer(LAYERS.ART_FRAME + " Right")
 
     """
@@ -500,6 +513,7 @@ class ClassVectorTemplate(VectorNyxMod, ClassMod, VectorTemplate):
     """
 
     def enable_frame_layers(self) -> None:
+        """Enable the frame and align the Class textbox."""
         super().enable_frame_layers()
         self.align_class_textbox()
 
@@ -519,6 +533,7 @@ class ClassVectorTemplate(VectorNyxMod, ClassMod, VectorTemplate):
             layer.visible = False
 
     def align_class_textbox(self) -> None:
+        """Merge the textbox group and align it to the right half."""
         # Merge the textbox and shift it to right half
         psd.merge_group(self.textbox_group)
         psd.align_horizontal(
@@ -534,6 +549,7 @@ class UniversesBeyondClassTemplate(ClassVectorTemplate):
     # Color Maps
     @cached_property
     def pinlines_color_map(self) -> dict[str, ColorObject]:
+        """Color overrides for Universes Beyond Class pinlines."""
         return {
             **pinlines_color_map,
             "W": (246, 247, 241),

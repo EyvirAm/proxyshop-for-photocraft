@@ -31,10 +31,12 @@ DIST_CONFIG: Path = PATH.SRC_DATA / "build" / "dist.yml"
 
 
 class ProjectModel(BaseModel):
+    """``ProjectModel`` model."""
     version: str
 
 
 class PyProjectModel(BaseModel):
+    """``PyProjectModel`` model."""
     project: ProjectModel
 
 

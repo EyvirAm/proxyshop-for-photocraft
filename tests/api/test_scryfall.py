@@ -1,3 +1,8 @@
+"""
+* Tests: Scryfall API
+
+Scryfall API tests.
+"""
 from __future__ import annotations
 from itertools import batched
 
@@ -15,8 +20,10 @@ from src.utils.tests import get_template_render_test_cases
 
 
 class TestScryfall:
+    """Shared Scryfall test setup."""
     @fixture(autouse=True)
     def setup(self) -> None:
+        """Prepare shared fixtures for the tests."""
         self.test_cards_by_layout = get_template_render_test_cases()
         self.test_card_filenames: list[str] = []
         for test_cases in self.test_cards_by_layout.values():

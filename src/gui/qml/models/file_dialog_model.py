@@ -1,3 +1,8 @@
+"""
+* GUI: File Dialog Model
+
+QML model backing file dialogs.
+"""
 from __future__ import annotations
 from asyncio import Future, get_running_loop
 from collections.abc import Iterable
@@ -13,12 +18,14 @@ from src.utils.asynchronic import try_threadsafe_set_result
 
 
 class FileMode(IntEnum):
+    """``FileMode`` options."""
     OpenFile = 0
     OpenFiles = 1
     SaveFile = 2
 
 
 class FileDialogModel(BaseDialogModel):
+    """QML model backing file dialogs."""
     ALL_FILTER = "All (*)"
     PSD_FILTER = "PSD (*.psd)"
     IMAGES_FILTER = "Images (*.png *.jpg *.jpeg *.jxl *.avif *.webp)"
@@ -42,10 +49,12 @@ class FileDialogModel(BaseDialogModel):
 
     @Property(QUrl, notify=_current_folder_changed)
     def current_folder(self) -> QUrl:  # pyright: ignore[reportRedeclaration]
+        """Folder the dialog starts in."""
         return self._current_folder
 
     @current_folder.setter
     def current_folder(self, value: QUrl) -> None:
+        """Set folder the dialog starts in."""
         if value != self._current_folder:
             self._current_folder = value
             self._current_folder_changed.emit()
@@ -54,10 +63,12 @@ class FileDialogModel(BaseDialogModel):
 
     @Property(int, notify=_file_mode_changed)
     def file_mode(self) -> FileMode:  # pyright: ignore[reportRedeclaration]
+        """Whether the dialog opens/saves files."""
         return self._file_mode
 
     @file_mode.setter
     def file_mode(self, value: FileMode) -> None:
+        """Set whether the dialog opens/saves files."""
         if value != self._file_mode:
             self._file_mode = value
             self._file_mode_changed.emit()
@@ -66,10 +77,12 @@ class FileDialogModel(BaseDialogModel):
 
     @Property(list, notify=_name_filters_changed)
     def name_filters(self) -> list[str]:  # pyright: ignore[reportRedeclaration]
+        """File name filters offered by the dialog."""
         return self._name_filters
 
     @name_filters.setter
     def name_filters(self, value: list[str]) -> None:
+        """Set file name filters offered by the dialog."""
         if value != self._name_filters:
             self._name_filters = value
             self._name_filters_changed.emit()
@@ -78,10 +91,12 @@ class FileDialogModel(BaseDialogModel):
 
     @Property(str, notify=_dialog_id_changed)
     def dialog_id(self) -> str:  # pyright: ignore[reportRedeclaration]
+        """Identifier of the active dialog."""
         return self._dialog_id
 
     @dialog_id.setter
     def dialog_id(self, value: str) -> None:
+        """Set identifier of the active dialog."""
         if value != self._dialog_id:
             self._dialog_id = value
             self._dialog_id_changed.emit()
@@ -92,11 +107,13 @@ class FileDialogModel(BaseDialogModel):
 
     @Slot("QVariantList")
     def on_accepted(self, files: list[QUrl]) -> None:
+        """On accepted."""
         if self._response_future:
             try_threadsafe_set_result(self._response_future, files)
 
     @Slot()
     def on_rejected(self) -> None:
+        """On rejected."""
         if self._response_future:
             arg: list[QUrl] = []
             try_threadsafe_set_result(self._response_future, arg)
@@ -114,6 +131,7 @@ class FileDialogModel(BaseDialogModel):
         modality: Qt.WindowModality = Qt.WindowModality.WindowModal,
         dialog_id: str = "default",
     ) -> list[QUrl]:
+        """Select files."""
         if self._response_future:
             await self._response_future
 
@@ -136,6 +154,7 @@ class FileDialogModel(BaseDialogModel):
         filters: Iterable[str] = (IMAGES_FILTER, ALL_FILTER),
         dialog_id: str = "default",
     ) -> list[Path]:
+        """Select images."""
         return [
             Path(path.toLocalFile())
             for path in await self.select_files(

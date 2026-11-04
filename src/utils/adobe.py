@@ -151,6 +151,7 @@ class ApplicationHandler(PhotocraftHandler):
         return None
 
     def is_error_dialog_enabled(self) -> bool:
+        """Whether PhotoCraft error dialogs are enabled."""
         if self._env:
             return self._env.PS_ERROR_DIALOG
         return False
@@ -164,6 +165,7 @@ class PhotoshopHandler(ApplicationHandler):
 
     @property
     def window_handle(self) -> int | None:
+        """Handle of the PhotoCraft window, if one was found."""
         if self._window_handle is None:
             self._window_handle = get_window_handle_by_process_file_path_suffix(
                 "photocraft.exe"
@@ -179,6 +181,7 @@ class PhotoshopHandler(ApplicationHandler):
         return cls._instance
 
     def refresh_app(self) -> OSError | None:
+        """Reconnect to PhotoCraft, returning the error or None on success."""
         if not self.is_running():
             try:
                 super().__init__(env=self._env)
@@ -190,11 +193,13 @@ class PhotoshopHandler(ApplicationHandler):
         return None
 
     def set_window_state(self, state: WindowState) -> None:
+        """Minimize, restore or hide the PhotoCraft window."""
         if (handle := self.window_handle) is not None:
             set_window_state(handle, state)
 
     @classmethod
     def is_running(cls) -> bool:
+        """Whether a PhotoCraft process is available."""
         with suppress(Exception):
             if cls._instance and cls._instance.version:
                 return True
@@ -202,32 +207,40 @@ class PhotoshopHandler(ApplicationHandler):
 
     @_cache_result(_CHAR_ID_TO_TYPE_ID_CACHE)
     def charIDToTypeID(self, index: str) -> int:
+        """Convert a four-character ID to its numeric type ID."""
         return super().charIDToTypeID(index)
 
     def cID(self, index: str) -> int:
+        """Alias of ``charIDToTypeID``."""
         return self.charIDToTypeID(index)
 
     @_cache_result(_TYPE_ID_TO_CHAR_ID_CACHE)
     def typeIDToCharID(self, index: int) -> str:
+        """Convert a numeric type ID to a four-character ID."""
         return super().typeIDToCharID(index)
 
     @_cache_result(_STRING_ID_TO_TYPE_ID_CACHE)
     def stringIDToTypeID(self, index: str) -> int:
+        """Convert a string ID to its numeric type ID."""
         return super().stringIDToTypeID(index)
 
     def sID(self, index: str) -> int:
+        """Alias of ``stringIDToTypeID``."""
         return self.stringIDToTypeID(index)
 
     @_cache_result(_TYPE_ID_TO_STRING_ID_CACHE)
     def typeIDToStringID(self, index: int) -> str:
+        """Convert a numeric type ID to its string ID."""
         return super().typeIDToStringID(index)
 
     @_cache_result(_CHAR_ID_TO_STRING_ID_CACHE)
     def charIDToStringID(self, index: str) -> str:
+        """Convert a four-character ID to its string ID."""
         return self.typeIDToStringID(self.charIDToTypeID(index))
 
     @_cache_result(_STRING_ID_TO_CHAR_ID_CACHE)
     def stringIDToCharID(self, index: str) -> str:
+        """Convert a string ID to a four-character ID."""
         return self.typeIDToCharID(self.stringIDToTypeID(index))
 
     def executeAction(
@@ -236,6 +249,7 @@ class PhotoshopHandler(ApplicationHandler):
         descriptor: ActionDescriptor | None = None,
         display_dialogs: DialogModes = DialogModes.DisplayNoDialogs,
     ) -> ActionDescriptor:
+        """Execute a Photoshop action descriptor through PhotoCraft."""
         if self.is_error_dialog_enabled():
             return super().executeAction(
                 event_id, descriptor, DialogModes.DisplayErrorDialogs
@@ -244,25 +258,31 @@ class PhotoshopHandler(ApplicationHandler):
 
     @cached_property
     def supports_target_text_replace(self) -> bool:
+        """Whether ranged text replacement is supported."""
         return self.version_meets_requirement("22.0.0")
 
     @cached_property
     def supports_webp(self) -> bool:
+        """Whether WebP export is supported."""
         return self.version_meets_requirement("23.2.0")
 
     @cached_property
     def supports_generative_fill(self) -> bool:
+        """Whether generative fill is supported."""
         return self.version_meets_requirement("24.6.0")
 
     @cached_property
     def supports_uxp_scripts(self) -> bool:
+        """Whether UXP scripts can be executed."""
         return self.version_meets_requirement("23.5.0")
 
     def version_meets_requirement(self, value: str) -> bool:
+        """Whether the backend version is at least ``value``."""
         return parse(self.version) >= parse(value)
 
     @_cache_result(_SCALE_BY_DPI_CACHE, _scale_by_dpi_cache_key)
     def scale_by_dpi(self, value: float) -> int:
+        """Scale a value to the active document's DPI."""
         return int((self.activeDocument.width / 3264) * value)
 
 
@@ -281,60 +301,72 @@ class ReferenceLayer(ArtLayer):
         relativeObject: Layer | None = None,
         insertionLocation: ElementPlacement | None = None,
     ) -> ArtLayer:
+        """Duplicate the reference layer."""
         return ReferenceLayer(super().duplicate(relativeObject, insertionLocation))
 
     @cached_property
     def id(self) -> int:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Layer identifier inherited from ``ArtLayer``."""
         return super().id
 
     @cached_property
     def action_getter(self) -> ActionDescriptor:
+        """Descriptor describing this reference layer."""
         ref = ActionReference()
         ref.putIdentifier(self._global_app.sID("layer"), self.id)
         return self._global_app.executeActionGet(ref)
 
     @property
     def bounds(self) -> LayerBounds:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Reference layer bounds."""
         if self._wrapped_layer is not None:
             return self._wrapped_layer.bounds
         return super().bounds
 
     @bounds.setter
     def bounds(self, value: LayerBounds) -> None:
+        """Set update the cached reference bounds."""
         if self._wrapped_layer is not None:
             self._wrapped_layer._bounds = value
         self._bounds = value
 
     @property
     def bounds_no_effects(self) -> LayerBounds:
+        """Reference layer bounds ignoring effects."""
         return self.bounds
 
     @bounds_no_effects.setter
     def bounds_no_effects(self, value: LayerBounds) -> None:
+        """Set update the cached bounds without effects."""
         self.bounds = value
 
     @property
     def dims(self) -> LayerDimensions:
+        """Calculated dimensions of the reference layer."""
         if hasattr(self, "_custom_dims") and self._custom_dims is not None:
             return self._custom_dims
         return self.get_dimensions_from_bounds(self.bounds)
 
     @dims.setter
     def dims(self, value: LayerDimensions) -> None:
+        """Set update the cached dimensions."""
         self._custom_dims = value
 
     @property
     def dims_no_effects(self) -> LayerDimensions:
+        """Dimensions of the reference layer ignoring effects."""
         return self.get_dimensions_from_bounds(self.bounds_no_effects)
 
     @dims_no_effects.setter
     def dims_no_effects(self, value: LayerDimensions) -> None:
+        """Set update the cached dimensions without effects."""
         self._custom_dims = value
 
     @staticmethod
     def get_dimensions_from_bounds(
         bounds: tuple[float, float, float, float],
     ) -> LayerDimensions:
+        """Calculate width, height and center values from bounds."""
         width = int(bounds[2] - bounds[0])
         height = int(bounds[3] - bounds[1])
         return LayerDimensions(
@@ -353,6 +385,7 @@ def try_photoshop[**P, T](func: Callable[P, T]) -> Callable[P, T | None]:
     """Decorator to handle trying to run a Photocraft/Photoshop action and allowing exceptions to fail silently."""
 
     def wrapper(*args: P.args, **kwargs: P.kwargs):
+        """Wrapper."""
         try:
             return func(*args, **kwargs)
         except PS_EXCEPTIONS:
@@ -362,6 +395,7 @@ def try_photoshop[**P, T](func: Callable[P, T]) -> Callable[P, T | None]:
 
 
 def get_photoshop_error_message(err: Exception) -> str:
+    """Build a user-facing message for a PhotoCraft backend error."""
     return (
         "Photocraft is currently busy, close any dialogs and stop any actions.\n"
         if "busy" in str(err).lower()
@@ -370,6 +404,7 @@ def get_photoshop_error_message(err: Exception) -> str:
 
 
 def get_com_error(signed_int: int) -> str:
+    """Resolve a Windows/COM error code to a readable message."""
     try:
         err = FormatMessage(signed_int)
     except Exception as e:  # noqa: BLE001
