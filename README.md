@@ -1,27 +1,29 @@
 # ⚠️ Disclaimer
 
-This is a fork of the original [Proxyshop](https://github.com/Investigamer/Proxyshop) with the aim of having its changes [integrated to the original project](https://github.com/Investigamer/Proxyshop/pull/120). Please report any [issues](https://github.com/pappnu/Proxyshop/issues) here or on the [Discord server](https://discord.gg/magic-proxies-889831317066358815)'s #proxyshop channel as issues opened on the original repository will likely go unnoticed.
+**Proxyshop for PhotoCraft** is a fork of [pappnu/Proxyshop](https://github.com/pappnu/Proxyshop), which is itself a fork of the original [Investigamer/Proxyshop](https://github.com/Investigamer/Proxyshop). This fork focuses on the PhotoCraft backend, template compatibility and the tooling needed to render cards without Adobe Photoshop.
+
+Please report issues in [this repository](https://github.com/EyvirAm/proxyshop-for-photocraft/issues). For general Proxyshop/community support, use the [Discord server](https://discord.gg/magic-proxies-889831317066358815)'s #proxyshop channel.
 
 <div align="center" markdown="1" style="font-size: large;">
 
 ![Showcase Image](src/img/cover-photo.png)
-Proxyshop is a Photoshop automation app that generates high-quality Magic the Gathering card renders. 
+**Proxyshop for PhotoCraft** is a PhotoCraft-powered automation app that generates high-quality Magic: The Gathering card renders.
 Inspired by Chilli-Axe's [original Photoshop automation scripts](https://github.com/chilli-axe/mtg-photoshop-automation).
 If you need help with this app or wish to troubleshoot an issue, [please join our discord](https://discord.gg/magic-proxies-889831317066358815)!
 
 
-![Photoshop](https://img.shields.io/badge/photoshop-CC_2017+-informational?style=plastic)
+![PhotoCraft](https://img.shields.io/badge/photocraft-0.20+-informational?style=plastic)
 ![Python](https://img.shields.io/badge/python-3.14-blue?style=plastic)
 [![Discord](https://img.shields.io/discord/889831317066358815?style=plastic&label=discord&color=brightgreen)](https://discord.gg/magic-proxies-889831317066358815)
-![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/MrTeferi/Proxyshop?style=plastic&label=commits&color=brightgreen)
-[![GitHub](https://img.shields.io/github/license/MrTeferi/Proxyshop?color=red&style=plastic)](https://github.com/MrTeferi/Proxyshop/blob/main/LICENSE)
+![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/EyvirAm/proxyshop-for-photocraft?style=plastic&label=commits&color=brightgreen)
+[![GitHub](https://img.shields.io/github/license/EyvirAm/proxyshop-for-photocraft?color=red&style=plastic)](https://github.com/EyvirAm/proxyshop-for-photocraft/blob/main/LICENSE)
 
 </div>
 
 # 🛠️ Requirements
-- Photoshop (23.5 or newer recommended but earlier versions down to 18.0 might work)
+- [PhotoCraft](https://github.com/storytold/photocraft) (latest release; Proxyshop will ask for `photocraft-cli.exe` if it is not found automatically)
 - Windows (currently incompatible with Mac/Linux)
-- [The Photoshop templates](https://drive.google.com/drive/u/1/folders/1moEdGmpAJloW4htqhrdWZlleyIop_z1W) (Can be downloaded in the app, which is recommended over manual download)
+- [The card templates](https://drive.google.com/drive/folders/1CkgrLFTh1lDQ1mgzustL_893IDJ8EQ3a) (downloaded by the app; missing files fall back to the upstream manifest)
 - Required fonts (included in `fonts/`):
     - **Beleren Proxy Bold** — For Card Name, Typeline, Power/Toughness
     - **Proxyglyph** — For mana symbols, a fork of Chilli's NDPMTG font
@@ -47,7 +49,7 @@ If you need help with this app or wish to troubleshoot an issue, [please join ou
 > [Documentation plan](docs/documentation-plan.md).
 
 # 🚀 Setup Guide
-1. Download the [latest release](https://github.com/MrTeferi/MTG-Proxyshop/releases), extract it to a folder of your choice.
+1. Download the [latest release](https://github.com/EyvirAm/proxyshop-for-photocraft/releases), extract it to a folder of your choice.
 2. Install the fonts included in the `fonts/` folder, please note that `Proxyglyph` may need to be updated in future releases.
     1. Select all the fonts
     2. right click
@@ -216,11 +218,11 @@ Setting up the Python & Node.js environments for Proxyshop is intended for advan
   - Fonts included in the `fonts/` folder
 2. Clone Proxyshop somewhere on your system, we'll call this the ***root directory***.
     ```bash
-    git clone https://github.com/MrTeferi/Proxyshop.git
+    git clone https://github.com/EyvirAm/proxyshop-for-photocraft.git
     ```
 3. Navigate to the **root directory** and install the project environment.
     ```bash
-    cd proxyshop
+    cd proxyshop-for-photocraft
     uv sync
     npm install
     npm run build
@@ -265,8 +267,8 @@ pytest ./tests
 ```
 
 # 💾 Download Templates Manually
-If you wish to download the templates manually, visit [this link](https://drive.google.com/drive/u/1/folders/1sgJ3Xu4FabxNgDl0yeI7OjDZ7fqlI4p3). These archives must be extracted to the `/templates` 
-directory. The archives found within the **Investigamer** and **SilvanMTG** drive folders must be extracted to 
+If you wish to download the templates manually, use the fork's [template folder](https://drive.google.com/drive/folders/1CkgrLFTh1lDQ1mgzustL_893IDJ8EQ3a). The complete upstream template archive is available [here](https://drive.google.com/drive/u/1/folders/1sgJ3Xu4FabxNgDl0yeI7OjDZ7fqlI4p3). These archives must be extracted to the `/templates`
+directory. The archives found within the **Investigamer** and **SilvanMTG** drive folders must be extracted to
 `/plugins/Investigamer/templates` and `/plugins/SilvanMTG/templates` respectively.
 
 # 🔩 Build the App
